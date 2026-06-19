@@ -1,0 +1,2313 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#060912">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="FIBAR NET">
+<link rel="manifest" href="manifest.json">
+<title>FIBAR NET Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════
+   TOKENS
+═══════════════════════════════════════════════ */
+:root{
+  --bg0:#060912; --bg1:#090e1a; --bg2:#0d1424; --bg3:#111c32;
+  --s1:#16243e; --s2:#1c2f50; --s3:#223660;
+  --bdr:#1e3050; --bdr2:#2a4070;
+
+  --cyan:#00d4ff; --cyan2:#00aacc; --cyan-dim:rgba(0,212,255,.1);
+  --blue:#3b82f6; --blue-dim:rgba(59,130,246,.1);
+  --green:#00e676; --green2:#00b85a; --green-dim:rgba(0,230,118,.1);
+  --amber:#ffb300; --amber-dim:rgba(255,179,0,.1);
+  --red:#ff3b5c; --red-dim:rgba(255,59,92,.1);
+  --purple:#a855f7; --purple-dim:rgba(168,85,247,.1);
+  --teal:#14b8a6; --teal-dim:rgba(20,184,166,.1);
+
+  --txt:#dde8f5; --txt2:#7a9cc5; --txt3:#3d5a80;
+  --mono:'JetBrains Mono',monospace;
+  --sans:'IBM Plex Sans Arabic',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--sans);background:var(--bg0);color:var(--txt);
+  min-height:100dvh;overflow-x:hidden;-webkit-font-smoothing:antialiased;
+}
+
+/* Grid noise overlay */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(0,212,255,.015) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,212,255,.015) 1px,transparent 1px);
+  background-size:40px 40px;
+}
+body::after{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 70% 50% at 15% 5%,rgba(0,212,255,.06) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 40% at 85% 90%,rgba(59,130,246,.05) 0%,transparent 55%),
+    radial-gradient(ellipse 30% 25% at 50% 50%,rgba(0,230,118,.03) 0%,transparent 50%);
+}
+
+/* ═══════════════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════════════ */
+.shell{display:flex;min-height:100dvh;position:relative;z-index:1}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  width:220px;flex-shrink:0;
+  background:rgba(9,14,26,.95);
+  border-left:1px solid var(--bdr);
+  display:flex;flex-direction:column;
+  position:sticky;top:0;height:100dvh;
+  transition:width .3s ease;
+  backdrop-filter:blur(20px);
+}
+.sidebar.collapsed{width:64px}
+.sidebar.collapsed .nav-label,.sidebar.collapsed .brand-name,.sidebar.collapsed .brand-sub,
+.sidebar.collapsed .section-label,.sidebar.collapsed .nav-badge{display:none}
+.sidebar.collapsed .nav-item{justify-content:center;padding:10px}
+
+/* Brand */
+.brand{
+  padding:18px 16px 14px;border-bottom:1px solid var(--bdr);
+  display:flex;align-items:center;gap:10px;overflow:hidden;
+}
+.brand-logo{
+  width:36px;height:36px;border-radius:10px;flex-shrink:0;
+  background:linear-gradient(135deg,#0a1f3d,#102b52);
+  border:1px solid rgba(0,212,255,.3);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;box-shadow:0 0 16px rgba(0,212,255,.2);
+  position:relative;
+}
+.brand-logo::after{
+  content:'';position:absolute;inset:-1px;border-radius:11px;
+  background:linear-gradient(135deg,rgba(0,212,255,.3),transparent);
+  pointer-events:none;
+}
+.brand-name{font-size:14px;font-weight:700;color:var(--cyan);letter-spacing:.5px;white-space:nowrap}
+.brand-sub{font-size:10px;color:var(--txt3);margin-top:1px;white-space:nowrap}
+
+/* Nav */
+.nav-scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:10px 8px;scrollbar-width:none}
+.nav-scroll::-webkit-scrollbar{display:none}
+.section-label{
+  font-size:9px;font-weight:700;color:var(--txt3);letter-spacing:1.5px;
+  text-transform:uppercase;padding:14px 10px 6px;white-space:nowrap;
+}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:9px 10px;
+  border-radius:9px;cursor:pointer;transition:all .18s;
+  color:var(--txt2);font-size:13px;font-weight:500;
+  position:relative;white-space:nowrap;user-select:none;
+  margin-bottom:2px;
+}
+.nav-item:hover{background:var(--s1);color:var(--txt)}
+.nav-item.active{
+  background:linear-gradient(135deg,rgba(0,212,255,.12),rgba(0,212,255,.05));
+  color:var(--cyan);border:1px solid rgba(0,212,255,.15);
+}
+.nav-item.active .nav-ico{filter:drop-shadow(0 0 6px var(--cyan))}
+.nav-ico{font-size:16px;flex-shrink:0;width:20px;text-align:center}
+.nav-label{flex:1}
+.nav-badge{
+  background:var(--red);color:#fff;
+  font-size:10px;font-weight:700;border-radius:8px;
+  padding:1px 6px;font-family:var(--mono);
+}
+.nav-badge.warn{background:var(--amber)}
+.nav-badge.info{background:var(--blue)}
+
+/* Collapse btn */
+.collapse-btn{
+  padding:12px 16px;border-top:1px solid var(--bdr);
+  display:flex;align-items:center;gap:8px;cursor:pointer;
+  color:var(--txt3);font-size:12px;transition:color .2s;
+}
+.collapse-btn:hover{color:var(--txt2)}
+.collapse-ico{font-size:14px;transition:transform .3s}
+.sidebar.collapsed .collapse-ico{transform:scaleX(-1)}
+
+/* ── TOPBAR ── */
+.topbar{
+  position:sticky;top:0;z-index:100;
+  background:rgba(6,9,18,.9);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--bdr);
+  padding:0 20px;height:56px;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+}
+.page-title{font-size:16px;font-weight:700;color:var(--txt)}
+.page-title span{color:var(--txt3);font-weight:400;font-size:13px;margin-right:8px}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.live-pill{
+  display:flex;align-items:center;gap:6px;
+  background:var(--green-dim);border:1px solid rgba(0,230,118,.2);
+  border-radius:20px;padding:5px 10px;font-size:11px;font-weight:600;color:var(--green);
+}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 1.4s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
+.time-display{
+  font-family:var(--mono);font-size:12px;color:var(--txt3);
+  background:var(--bg2);border:1px solid var(--bdr);border-radius:8px;padding:5px 10px;
+}
+
+/* ── MOBILE TOPNAV (hidden on desktop) ── */
+.mobile-tabs{display:none}
+
+/* ── CONTENT ── */
+.content-area{flex:1;display:flex;flex-direction:column;min-width:0}
+.main{flex:1;padding:20px;overflow:hidden}
+.page{display:none;animation:fadeUp .22s ease}
+.page.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ═══════════════════════════════════════════════
+   COMPONENTS
+═══════════════════════════════════════════════ */
+
+/* ── KPI ROW ── */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px;margin-bottom:20px}
+.kpi{
+  background:var(--bg2);border:1px solid var(--bdr);border-radius:14px;
+  padding:16px 18px;position:relative;overflow:hidden;cursor:default;
+  transition:transform .2s,box-shadow .2s;
+}
+.kpi:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,.3)}
+.kpi-glow{
+  position:absolute;top:0;right:0;width:80px;height:80px;border-radius:50%;
+  background:radial-gradient(circle,var(--kc,var(--cyan)) 0%,transparent 70%);
+  opacity:.08;transform:translate(20px,-20px);
+}
+.kpi-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.kpi-ico{font-size:20px}
+.kpi-trend{
+  font-size:10px;font-weight:700;font-family:var(--mono);
+  padding:2px 6px;border-radius:6px;
+}
+.kpi-trend.up{background:var(--green-dim);color:var(--green)}
+.kpi-trend.dn{background:var(--red-dim);color:var(--red)}
+.kpi-trend.nu{background:var(--s2);color:var(--txt3)}
+.kpi-num{font-size:30px;font-weight:700;font-family:var(--mono);line-height:1;color:var(--kc,var(--cyan))}
+.kpi-lbl{font-size:11px;color:var(--txt3);margin-top:4px}
+.kpi-bar{
+  position:absolute;bottom:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--kc,var(--cyan)),transparent);opacity:.5;
+}
+
+/* ── SECTION HEADER ── */
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap}
+.sh-left{display:flex;align-items:center;gap:8px}
+.sh-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.sh-title{font-size:15px;font-weight:700}
+.sh-count{font-size:11px;color:var(--txt3);background:var(--s1);border:1px solid var(--bdr);border-radius:6px;padding:2px 8px;font-family:var(--mono)}
+.sh-line{flex:1;height:1px;background:linear-gradient(90deg,var(--bdr),transparent)}
+
+/* ── GRID LAYOUTS ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+@media(max-width:800px){.g2,.g3{grid-template-columns:1fr}}
+
+/* ── CARD ── */
+.card{
+  background:var(--bg2);border:1px solid var(--bdr);border-radius:16px;
+  padding:18px;position:relative;overflow:hidden;
+}
+.card-title{font-size:11px;font-weight:700;color:var(--txt3);letter-spacing:.8px;text-transform:uppercase;margin-bottom:14px}
+
+/* ── BAR CHART ── */
+.bc-row{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.bc-lbl{width:130px;font-size:12px;color:var(--txt2);text-align:right;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bc-track{flex:1;height:5px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden}
+.bc-fill{height:100%;border-radius:3px;transition:width .9s cubic-bezier(.25,.46,.45,.94)}
+.bc-val{font-size:11px;font-weight:700;font-family:var(--mono);width:28px;text-align:left;flex-shrink:0}
+
+/* ── TABLE ── */
+.tbl-wrap{
+  background:var(--bg2);border:1px solid var(--bdr);border-radius:16px;overflow:hidden;
+}
+table{width:100%;border-collapse:collapse}
+thead th{
+  padding:11px 14px;font-size:10px;font-weight:700;color:var(--txt3);
+  text-align:right;letter-spacing:.8px;text-transform:uppercase;
+  background:rgba(255,255,255,.02);border-bottom:1px solid var(--bdr);white-space:nowrap;
+}
+tbody tr{transition:background .12s;cursor:default}
+tbody tr:hover{background:rgba(255,255,255,.02)}
+tbody td{padding:11px 14px;font-size:13px;border-bottom:1px solid rgba(255,255,255,.03);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+.td-mono{font-family:var(--mono);font-size:12px}
+.td-dim{color:var(--txt2);font-size:12px}
+.td-acts{display:flex;gap:5px}
+
+/* ── BADGE ── */
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap}
+.b-cyan   {background:var(--cyan-dim);   color:var(--cyan);   border:1px solid rgba(0,212,255,.2)}
+.b-blue   {background:var(--blue-dim);   color:#60a5fa;       border:1px solid rgba(59,130,246,.2)}
+.b-green  {background:var(--green-dim);  color:var(--green);  border:1px solid rgba(0,230,118,.2)}
+.b-amber  {background:var(--amber-dim);  color:var(--amber);  border:1px solid rgba(255,179,0,.2)}
+.b-red    {background:var(--red-dim);    color:var(--red);    border:1px solid rgba(255,59,92,.2)}
+.b-purple {background:var(--purple-dim); color:var(--purple); border:1px solid rgba(168,85,247,.2)}
+.b-teal   {background:var(--teal-dim);   color:var(--teal);   border:1px solid rgba(20,184,166,.2)}
+
+/* ── ALERT FEED ── */
+.alert-feed{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+.af-item{
+  display:flex;align-items:flex-start;gap:12px;padding:12px 14px;
+  border-radius:11px;border:1px solid var(--bdr);
+  background:var(--bg2);transition:background .15s;cursor:default;
+}
+.af-item:hover{background:var(--s1)}
+.af-item.danger{border-color:rgba(255,59,92,.25);background:rgba(255,59,92,.04)}
+.af-item.warn  {border-color:rgba(255,179,0,.2);background:rgba(255,179,0,.03)}
+.af-item.info  {border-color:rgba(0,212,255,.15);background:rgba(0,212,255,.03)}
+.af-item.ok    {border-color:rgba(0,230,118,.15);background:rgba(0,230,118,.03)}
+.af-led{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.af-led.danger{background:var(--red);box-shadow:0 0 6px var(--red)}
+.af-led.warn  {background:var(--amber);box-shadow:0 0 6px var(--amber)}
+.af-led.info  {background:var(--cyan);box-shadow:0 0 6px var(--cyan)}
+.af-led.ok    {background:var(--green);box-shadow:0 0 6px var(--green)}
+.af-body{flex:1;min-width:0}
+.af-title{font-size:13px;font-weight:600}
+.af-desc{font-size:11px;color:var(--txt2);margin-top:3px;line-height:1.4}
+.af-tag{font-size:10px;font-weight:700;flex-shrink:0;font-family:var(--mono);
+  padding:2px 7px;border-radius:5px;background:var(--s2);color:var(--txt3)}
+
+/* ── TOOLBAR ── */
+.toolbar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.tin{
+  flex:1;min-width:160px;padding:9px 13px;
+  background:var(--bg3);border:1px solid var(--bdr);border-radius:10px;
+  color:var(--txt);font-family:var(--sans);font-size:13px;outline:none;
+  transition:border .2s,box-shadow .2s;
+}
+.tin:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,212,255,.1)}
+.tin::placeholder{color:var(--txt3)}
+.tsel{
+  padding:9px 13px;background:var(--bg3);border:1px solid var(--bdr);
+  border-radius:10px;color:var(--txt);font-family:var(--sans);font-size:13px;
+  outline:none;cursor:pointer;
+}
+.tsel option{background:var(--bg2)}
+
+/* ── BUTTONS ── */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;padding:9px 16px;
+  border-radius:10px;border:none;font-family:var(--sans);font-size:13px;
+  font-weight:600;cursor:pointer;transition:all .18s;white-space:nowrap;user-select:none;
+}
+.btn:active{transform:scale(.96)}
+.btn-cyan{
+  background:linear-gradient(135deg,rgba(0,212,255,.2),rgba(0,212,255,.1));
+  color:var(--cyan);border:1px solid rgba(0,212,255,.3);
+}
+.btn-cyan:hover{background:rgba(0,212,255,.25);box-shadow:0 0 20px rgba(0,212,255,.2)}
+.btn-green{background:linear-gradient(135deg,#00b85a,#009948);color:#000;box-shadow:0 4px 14px rgba(0,230,118,.25)}
+.btn-green:hover{box-shadow:0 4px 20px rgba(0,230,118,.35)}
+.btn-red{background:linear-gradient(135deg,#ff3b5c,#cc2244);color:#fff;box-shadow:0 4px 14px rgba(255,59,92,.25)}
+.btn-red:hover{box-shadow:0 4px 20px rgba(255,59,92,.35)}
+.btn-amber{background:linear-gradient(135deg,#ffb300,#e69900);color:#000}
+.btn-ghost{background:rgba(255,255,255,.05);color:var(--txt2);border:1px solid var(--bdr)}
+.btn-ghost:hover{background:rgba(255,255,255,.09);color:var(--txt)}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:8px}
+.btn-xs{padding:4px 9px;font-size:11px;border-radius:6px}
+.btn-del{background:var(--red-dim);color:var(--red);border:1px solid rgba(255,59,92,.2);border-radius:6px;cursor:pointer;padding:4px 9px;font-size:11px}
+
+/* ── FAULT CARDS ── */
+.fc-list{display:flex;flex-direction:column;gap:10px}
+.fc{
+  background:var(--bg2);border:1px solid var(--bdr);border-radius:14px;
+  padding:14px 16px;display:flex;gap:14px;align-items:flex-start;
+  transition:box-shadow .2s;position:relative;overflow:hidden;
+}
+.fc::before{content:'';position:absolute;top:0;right:0;bottom:0;width:3px;background:var(--fc-c,var(--bdr))}
+.fc.open  {--fc-c:var(--red);  border-color:rgba(255,59,92,.2)}
+.fc.prog  {--fc-c:var(--amber);border-color:rgba(255,179,0,.2)}
+.fc.done  {--fc-c:var(--green);border-color:rgba(0,230,118,.15);opacity:.7}
+.fc-ico{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.fc-ico.open{background:var(--red-dim)}
+.fc-ico.prog{background:var(--amber-dim)}
+.fc-ico.done{background:var(--green-dim)}
+.fc-body{flex:1;min-width:0}
+.fc-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+.fc-title{font-size:14px;font-weight:700}
+.fc-meta{font-size:11px;color:var(--txt2);margin-bottom:6px}
+.fc-desc{font-size:13px;line-height:1.5;color:var(--txt)}
+.fc-acts{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+
+/* ── TASK CARD ── */
+.task-list{display:flex;flex-direction:column;gap:8px}
+.task-item{
+  background:var(--bg2);border:1px solid var(--bdr);border-radius:12px;
+  padding:13px 15px;display:flex;align-items:flex-start;gap:12px;
+  transition:background .15s;
+}
+.task-item:hover{background:var(--s1)}
+.task-item.done-item{opacity:.55}
+.task-check{
+  width:18px;height:18px;border-radius:5px;border:2px solid var(--bdr2);
+  cursor:pointer;flex-shrink:0;margin-top:1px;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;font-size:11px;
+}
+.task-check.checked{background:var(--green);border-color:var(--green);color:#000}
+.task-body{flex:1;min-width:0}
+.task-title{font-size:13px;font-weight:600}
+.task-item.done-item .task-title{text-decoration:line-through;color:var(--txt3)}
+.task-meta{font-size:11px;color:var(--txt3);margin-top:3px;display:flex;gap:8px;flex-wrap:wrap}
+.task-pri{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px}
+.task-pri.high{background:var(--red-dim);color:var(--red)}
+.task-pri.med {background:var(--amber-dim);color:var(--amber)}
+.task-pri.low {background:var(--green-dim);color:var(--green)}
+
+/* ── REPORT CARD ── */
+.report-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:16px}
+.report-item{
+  background:var(--s1);border:1px solid var(--bdr);border-radius:10px;
+  padding:14px;display:flex;align-items:center;gap:12px;cursor:pointer;
+  transition:all .2s;
+}
+.report-item:hover{background:var(--s2);border-color:var(--bdr2)}
+.report-ico{font-size:24px;flex-shrink:0}
+.report-name{font-size:12px;font-weight:700}
+.report-desc{font-size:11px;color:var(--txt3);margin-top:2px}
+
+/* ── MODAL ── */
+.modal-bg{
+  display:none;position:fixed;inset:0;z-index:500;
+  background:rgba(0,0,0,.75);backdrop-filter:blur(10px);
+  align-items:center;justify-content:center;padding:16px;
+}
+.modal-bg.open{display:flex;animation:mfade .2s ease}
+@keyframes mfade{from{opacity:0}to{opacity:1}}
+.modal{
+  background:var(--bg3);border:1px solid var(--bdr2);border-radius:20px;
+  padding:24px;width:min(580px,100%);max-height:92dvh;overflow-y:auto;
+  box-shadow:0 32px 80px rgba(0,0,0,.7);
+  animation:mslide .25s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes mslide{from{transform:translateY(24px) scale(.97);opacity:0}to{transform:none;opacity:1}}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.modal-title{font-size:16px;font-weight:700;display:flex;align-items:center;gap:10px}
+.modal-close{
+  width:30px;height:30px;border-radius:8px;border:none;
+  background:rgba(255,255,255,.06);color:var(--txt2);cursor:pointer;font-size:16px;
+  display:flex;align-items:center;justify-content:center;transition:all .2s;
+}
+.modal-close:hover{background:var(--red-dim);color:var(--red)}
+.fg{margin-bottom:13px}
+.fg label{display:block;font-size:10px;font-weight:700;color:var(--txt3);margin-bottom:6px;letter-spacing:.5px;text-transform:uppercase}
+.fg input,.fg select,.fg textarea{
+  width:100%;padding:10px 12px;
+  background:rgba(255,255,255,.04);border:1px solid var(--bdr);border-radius:10px;
+  color:var(--txt);font-family:var(--sans);font-size:13px;outline:none;transition:border .2s,box-shadow .2s;
+}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,212,255,.1)}
+.fg select option{background:var(--bg2)}
+.fg textarea{resize:vertical;min-height:72px}
+.fgr{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:500px){.fgr{grid-template-columns:1fr}}
+.modal-foot{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--bdr)}
+
+/* ── TIMELINE ── */
+.tl{display:flex;flex-direction:column;gap:0}
+.tl-item{display:flex;gap:14px;padding-bottom:16px;position:relative}
+.tl-item:last-child{padding-bottom:0}
+.tl-item:last-child .tl-line{display:none}
+.tl-dot-wrap{display:flex;flex-direction:column;align-items:center;width:24px;flex-shrink:0}
+.tl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.tl-line{flex:1;width:1px;background:var(--bdr);margin-top:4px}
+.tl-body{flex:1;padding-bottom:0}
+.tl-title{font-size:12px;font-weight:600}
+.tl-time{font-size:10px;color:var(--txt3);font-family:var(--mono)}
+.tl-desc{font-size:11px;color:var(--txt2);margin-top:2px;line-height:1.4}
+
+/* ── PROGRESS ── */
+.prog-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.prog-lbl{font-size:12px;color:var(--txt2);flex:1}
+.prog-track{flex:2;height:6px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;background:var(--cyan)}
+.prog-val{font-size:11px;font-family:var(--mono);font-weight:700;color:var(--cyan);width:36px;text-align:left}
+
+/* ── TOAST ── */
+#toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(70px);
+  background:var(--s2);border:1px solid var(--bdr2);border-radius:12px;
+  padding:11px 18px;font-size:13px;font-weight:600;color:var(--txt);
+  box-shadow:0 8px 30px rgba(0,0,0,.5);z-index:999;transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+  white-space:nowrap;pointer-events:none;
+}
+#toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ── INSTALL ── */
+#install-bar{
+  display:none;background:rgba(0,212,255,.06);border-bottom:1px solid rgba(0,212,255,.15);
+  padding:9px 20px;align-items:center;justify-content:center;gap:12px;font-size:12px;
+}
+#install-bar.show{display:flex}
+
+/* ── EMPTY ── */
+.empty-state{text-align:center;padding:48px 20px;color:var(--txt3)}
+.empty-ico{font-size:36px;display:block;margin-bottom:10px;opacity:.3}
+.empty-txt{font-size:13px;line-height:2}
+
+/* ── SCROLL ── */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:2px}
+
+/* ── MOBILE ── */
+@media(max-width:700px){
+  .sidebar{display:none}
+  .main{padding:14px;padding-bottom:80px}
+  .hide-m{display:none}
+  .kpi-row{grid-template-columns:repeat(2,1fr)}
+  .g2,.g3{grid-template-columns:1fr}
+  .mobile-tabs{
+    display:flex;position:fixed;bottom:0;left:0;right:0;z-index:300;
+    background:rgba(9,14,26,.97);backdrop-filter:blur(20px);
+    border-top:1px solid var(--bdr);padding:6px 4px;
+    padding-bottom:max(6px,env(safe-area-inset-bottom));
+    overflow-x:auto;
+  }
+  .mtab{
+    flex:1;min-width:58px;display:flex;flex-direction:column;align-items:center;gap:2px;
+    padding:6px 2px;border-radius:8px;cursor:pointer;color:var(--txt3);
+    font-size:9px;font-weight:600;position:relative;
+  }
+  .mtab .mti{font-size:17px}
+  .mtab.active{color:var(--cyan)}
+  .mtab-badge{
+    position:absolute;top:2px;left:50%;transform:translateX(8px);
+    background:var(--red);color:#fff;font-size:8px;font-weight:700;
+    border-radius:6px;padding:0 4px;min-width:12px;
+  }
+}
+
+/* ── STATUS INDICATOR ROW ── */
+.status-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}
+.status-pill{
+  display:flex;align-items:center;gap:6px;
+  background:var(--bg2);border:1px solid var(--bdr);border-radius:20px;
+  padding:5px 12px;font-size:11px;font-weight:600;cursor:default;
+}
+.status-led{width:6px;height:6px;border-radius:50%}
+
+/* ── SUBSCRIPTION TABLE EXPIRY ── */
+.exp-ok{color:var(--green)}
+.exp-soon{color:var(--amber);font-weight:700}
+.exp-bad{color:var(--red);font-weight:700}
+
+/* ── MAINTENANCE SCHEDULE ── */
+.maint-card{
+  background:var(--s1);border:1px solid var(--bdr);border-radius:12px;padding:14px;
+  display:flex;align-items:flex-start;gap:12px;margin-bottom:8px;transition:background .15s;
+}
+.maint-card:hover{background:var(--s2)}
+.maint-date{text-align:center;min-width:48px}
+.maint-day{font-size:22px;font-weight:700;font-family:var(--mono);line-height:1;color:var(--cyan)}
+.maint-month{font-size:10px;color:var(--txt3)}
+.maint-body{flex:1}
+.maint-title{font-size:13px;font-weight:600}
+.maint-site{font-size:11px;color:var(--txt2);margin-top:2px}
+</style>
+</head>
+<body>
+
+<div id="install-bar">
+  <span>📲 ثبّت FIBAR NET على جهازك للوصول الأسرع</span>
+  <button class="btn btn-cyan btn-sm" id="install-btn">تثبيت</button>
+  <button class="btn btn-ghost btn-sm" onclick="this.closest('#install-bar').classList.remove('show')">✕</button>
+</div>
+
+<div class="shell">
+
+<!-- ════════ SIDEBAR (desktop) ════════ -->
+<nav class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="brand-logo">⚡</div>
+    <div>
+      <div class="brand-name">FIBAR NET</div>
+      <div class="brand-sub">v3.0 Pro</div>
+    </div>
+  </div>
+
+  <div class="nav-scroll">
+    <div class="section-label">الرئيسية</div>
+    <div class="nav-item active" data-page="dashboard" onclick="go('dashboard',this)">
+      <span class="nav-ico">🏠</span><span class="nav-label">لوحة التحكم</span>
+    </div>
+    <div class="nav-item" data-page="activity" onclick="go('activity',this)">
+      <span class="nav-ico">📋</span><span class="nav-label">سجل النشاط</span>
+    </div>
+
+    <div class="section-label">إدارة الشبكة</div>
+    <div class="nav-item" data-page="sites" onclick="go('sites',this)">
+      <span class="nav-ico">📡</span><span class="nav-label">المواقع</span>
+      <span class="nav-badge warn" id="nb-sites">0</span>
+    </div>
+    <div class="nav-item" data-page="devices" onclick="go('devices',this)">
+      <span class="nav-ico">🔧</span><span class="nav-label">الأجهزة</span>
+    </div>
+    <div class="nav-item" data-page="map" onclick="go('map',this)">
+      <span class="nav-ico">🗺️</span><span class="nav-label">هيكل الشبكة</span>
+    </div>
+
+    <div class="section-label">العمليات</div>
+    <div class="nav-item" data-page="faults" onclick="go('faults',this)">
+      <span class="nav-ico">🚨</span><span class="nav-label">الأعطال</span>
+      <span class="nav-badge" id="nb-faults">0</span>
+    </div>
+    <div class="nav-item" data-page="tasks" onclick="go('tasks',this)">
+      <span class="nav-ico">✅</span><span class="nav-label">المهام</span>
+      <span class="nav-badge info" id="nb-tasks">0</span>
+    </div>
+    <div class="nav-item" data-page="maintenance" onclick="go('maintenance',this)">
+      <span class="nav-ico">🛠️</span><span class="nav-label">الصيانة</span>
+    </div>
+
+    <div class="section-label">المالية</div>
+    <div class="nav-item" data-page="subscribers" onclick="go('subscribers',this)">
+      <span class="nav-ico">👥</span><span class="nav-label">المشتركون</span>
+      <span class="nav-badge warn" id="nb-subs">0</span>
+    </div>
+    <div class="nav-item" data-page="finance" onclick="go('finance',this)">
+      <span class="nav-ico">💰</span><span class="nav-label">المالية</span>
+    </div>
+
+    <div class="section-label">التقارير</div>
+    <div class="nav-item" data-page="reports" onclick="go('reports',this)">
+      <span class="nav-ico">📊</span><span class="nav-label">التقارير</span>
+    </div>
+    <div class="nav-item" data-page="settings" onclick="go('settings',this)">
+      <span class="nav-ico">⚙️</span><span class="nav-label">الإعدادات</span>
+    </div>
+  </div>
+
+  <div class="collapse-btn" onclick="toggleSidebar()">
+    <span class="collapse-ico">◀</span>
+    <span class="nav-label" style="font-size:12px">طي القائمة</span>
+  </div>
+</nav>
+
+<!-- ════════ CONTENT ════════ -->
+<div class="content-area">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="page-title" id="page-heading">لوحة التحكم</div>
+    </div>
+    <div class="topbar-right">
+      <div class="live-pill"><div class="live-dot"></div>نشط</div>
+      <div class="time-display" id="clock">--:--</div>
+      <button class="btn btn-ghost btn-sm" onclick="exportData()">📤 تصدير</button>
+    </div>
+  </div>
+
+  <div class="main">
+
+<!-- ════════════════════════════════════════
+  PAGE: DASHBOARD
+════════════════════════════════════════ -->
+<div id="page-dashboard" class="page active">
+
+  <div class="kpi-row" id="kpi-row"></div>
+
+  <div class="status-row" id="status-row"></div>
+
+  <div class="g2" style="margin-bottom:18px">
+    <!-- Alerts -->
+    <div>
+      <div class="sh">
+        <div class="sh-left">
+          <div class="sh-icon" style="background:var(--red-dim);font-size:14px">🔔</div>
+          <span class="sh-title">التنبيهات</span>
+        </div>
+      </div>
+      <div class="alert-feed" id="dash-alerts"></div>
+    </div>
+
+    <!-- Activity timeline -->
+    <div>
+      <div class="sh">
+        <div class="sh-left">
+          <div class="sh-icon" style="background:var(--blue-dim);font-size:14px">📋</div>
+          <span class="sh-title">آخر النشاطات</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="tl" id="dash-activity"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="g3">
+    <div class="card">
+      <div class="card-title">المواقع حسب المنطقة</div>
+      <div id="chart-region"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">توزيع أنواع المودمات</div>
+      <div id="chart-modems"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">حالة المواقع</div>
+      <div id="chart-status"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+  PAGE: SITES
+════════════════════════════════════════ -->
+<div id="page-sites" class="page">
+  <div class="sh">
+    <div class="sh-left">
+      <div class="sh-icon" style="background:var(--cyan-dim)">📡</div>
+      <span class="sh-title">إدارة المواقع</span>
+      <span class="sh-count" id="sites-count">0</span>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-cyan" onclick="openModal('m-site')">+ إضافة موقع</button>
+    </div>
+  </div>
+  <div class="toolbar">
+    <input class="tin" id="q-sites" placeholder="🔍 بحث بالاسم أو المسؤول أو الجوال..." oninput="renderSites()">
+    <select class="tsel" id="fs-region" onchange="renderSites()">
+      <option value="">كل المناطق</option>
+      <option>النجد الأحمر</option><option>النجد الأعلى</option>
+      <option>وسط السواق</option><option>مرعه</option><option>نقطة رئيسية</option>
+    </select>
+    <select class="tsel" id="fs-status" onchange="renderSites()">
+      <option value="">كل الحالات</option>
+      <option>نشط</option><option>يحتاج متابعة</option><option>معطل</option>
+    </select>
+    <select class="tsel" id="fs-type" onchange="renderSites()">
+      <option value="">كل الأنواع</option>
+      <option>نقطة رئيسية</option><option>نقطة فرعية</option>
+    </select>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr>
+        <th style="width:40px">#</th>
+        <th>الموقع</th>
+        <th class="hide-m">المنطقة</th>
+        <th class="hide-m">النوع</th>
+        <th class="hide-m">المسؤول</th>
+        <th>الجوال</th>
+        <th>الحالة</th>
+        <th class="hide-m">آخر تحديث</th>
+        <th>إجراء</th>
+      </tr></thead>
+      <tbody id="sites-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+  PAGE: DEVICES
+════════════════════════════════════════ -->
+<div id="page-devices" class="page">
+  <div class="sh">
+    <div class="sh-left">
+      <div class="sh-icon" style="background:var(--purple-dim)">🔧</div>
+      <span class="sh-title">إدارة الأجهزة</span>
+      <span class="sh-count" id="dev-count">0</span>
+    </div>
+    <button class="btn btn-cyan" onclick="openModal('m-device')">+ إضافة جهاز</button>
+  </div>
+  <div class="toolbar">
+    <input class="tin" id="q-dev" placeholder="🔍 بحث..." oninput="renderDevices()">
+    <select class="tsel" id="fd-type" onchange="renderDevices()">
+      <option value="">كل الأنواع</option>
+      <option>مودم</option><option>بطارية</option><option>لوح طاقة</option>
+      <option>منظم</option><option>أنتينا</option><option>سويتش</option><option>محول</option>
+    </select>
+    <select class="tsel" id="fd-status" onchange="renderDevices()">
+      <option value="">كل الحالات</option>
+      <option>يعمل</option><option>يحتاج صيانة</option><option>معطل</option>
+    </select>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr>
+        <th>#</th><th>الجهاز</th><th>النوع</th>
+        <th class="hide-m">المواصفات</th><th class="hide-m">الموقع</th>
+        <th>الكمية</th><th>الحالة</th><th>إجراء</th>
+      </tr></thead>
+      <tbody id="dev-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+  PAGE: NETWORK MAP
+════════════════════════════════════════ -->
+<div id="page-map" class="page">
+  <div class="sh">
+    <div class="sh-left">
+      <div class="sh-icon" style="background:var(--teal-dim)">🗺️</div>
+      <span class="sh-title">هيكل الشبكة</span>
+    </div>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <div style="padding:14px 18px;border-bottom:1px solid var(--bdr);display:flex;gap:16px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px"><span style="width:10px;height:10px;background:var(--cyan);border-radius:50%;display:inline-block"></span> مصدر الإنترنت</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px"><span style="width:10px;height:10px;background:var(--red);border-radius:50%;display:inline-block"></span> نقطة رئيسية</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px"><span style="width:10px;height:10px;background:var(--amber);border-radius:50%;display:inline-block"></span> نقطة رئيسية مرعه</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px"><span style="width:10px;height:10px;background:var(--green);border-radius:50%;display:inline-block"></span> نقطة فرعية</div>
+    </div>
+    <svg id="net-svg" style="width:100%;height:480px;display:block"></svg>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+  PAGE: FAULTS
+════════════════════════════════════════ -->
+<div id="page-faults" class="page">
+  <div class="sh">
+    <div class="sh-left">
+      <div class="sh-icon" style="background:var(--red-dim)">🚨</div>
+      <span class="sh-title">سجل الأعطال</span>
+      <span class="sh-count" id="fault-count">0</span>
+    </div>
+    <button class="btn btn-red" onclick="openModal('m-fault')">+ تسجيل عطل</button>
+  </div>
+  <div class="toolbar">
+    <select class="tsel" id="ff-status" onchange="renderFaults()">
+      <option value="">كل الحالات</option>
+      <option>مفتوح</option><option>قيد المعالجة</option><option>مغلق</option>
+    </select>
+    <select class="tsel" id="ff-region" onchange="renderFaults()">
+      <option value="">كل المناطق</option>
+      <option>النجد الأحمر</option><option>النجد الأعلى</option>
+      <option>وسط السواق</option><option>مرعه</option><option>نقطة رئيسية</option>
+    </select>
+    <select class="tsel" id="ff-pri" onchange="renderFaults()">
+      <option value="">كل الأولويات</option>
+      <option>حرجة</option><option>عاجلة</option><option>عادية</option>
+    </select>
+  </div>
+  <div class="fc-list" id="fault-list"></div>
+</div>
+
+<!-- ════════════════════════════════════════
+  PAGE: TASKS
+════════════════════════════════════════ -->
+<div id="page-tasks" class="page">
+  <div class="sh">
+    <div class="sh-left">
+      <div class="sh-icon" style="background:var(--green-dim)">✅</div>
+      <span class="sh-title">إدارة المهام</span>
+      <span class="sh-count" id="task-count">0</span>
+    </div>
+    <button class="btn btn-cyan" onclick="openModal('m-task')">+ إضافة مهمة</button>
+  </div>
+  <div class="toolbar">
+    <select class="tsel" id="ft-status" onchange="renderTasks()">
+      <option value="">كل المهام</option><option>مفتوحة</option><option>مكتملة</option>
+    </select>
+    <select class="tsel" id="ft-pri" onchange="renderTasks()">
+      <option value="">كل الأولويات</option>
+      <option>عالية</option><option>متوسطة</option><option>منخفضة</option>
+    </select>
+  </div>
+  <div class="task-list" id="task-list"></div>
+</div>
+
+<!-- ════════════════════════════════════════
+  PAGE: MAINTENANCE
+════════════════════════════════════════ -->
+<div id="page-maintenance" class="page">
+  <div class="sh">
+    <div class="sh-left">
+      <div class="sh-icon" style="background:var(--amber-dim)">🛠️</div>
+      <span class="sh-title">جدول الصيانة</span>
+    </div>
+    <button class="btn btn-cyan" onclick="openModal('m-maint')">+ جدولة صيانة</button>
+  </div>
+
+  <div class="g2" style="margin-bottom:18px">
+    <div class="card">
+      <div class="card-title">الصيانة القادمة</div>
+      <div id="maint-upcoming"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">دورة الصيانة الموصى بها</div>
+      <div class="prog-row" style="margin-top:8px">
+        <div class="prog-lbl">فحص المودمات</div>
+        <div class="prog-track"><div class="prog-fill" style="width:70%;background:var(--green)"></div></div>
+        <div class="prog-val" style="color:var(--green)">70%</div>
+      </div>
+      <div class="prog-row">
+        <div class="prog-lbl">تنظيف الألواح الشمسية</div>
+        <div class="prog-track"><div class="prog-fill" style="width:40%;background:var(--amber)"></div></div>
+        <div class="prog-val" style="color:var(--amber)">40%</div>
+      </div>
+      <div class="prog-row">
+        <div class="prog-lbl">فحص البطاريات</div>
+        <div class="prog-track"><div class="prog-fill" style="width:55%;background:var(--blue)"></div></div>
+        <div class="prog-val" style="color:#60a5fa">55%</div>
+      </div>
+      <div class="prog-row">
+        <div class="prog-lbl">فحص الأنتينات</div>
+        <div class="prog-track"><div class="prog-fill" style="width:30%;background:var(--red)"></div></div>
+        <div class="prog-val" style="color:var(--red)">30%</div>
+      </div>
+      <div class="prog-row">
+        <div class="prog-lbl">تحديث الأجهزة</div>
+        <div class="prog-track"><div class="prog-fill" style="width:20%;background:var(--purple)"></div></div>
+        <div class="prog-val" style="color:var(--purple)">20%</div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">سجل الصيانة</div>
+    <div id="maint-log"></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+  PAGE: SUBSCRIBERS
+════════════════════════════════════════ -->
+<div id="page-subscribers" class="page">
+  <div class="sh">
+    <div class="sh-left">
+      <div class="sh-icon" style="background:var(--teal-dim)">👥</div>
+      <span class="sh-title">إدارة المشتركين</span>
+      <span class="sh-count" id="subs-count">0</span>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-cyan" onclick="openModal('m-sub')">+ إضافة مشترك</button>
+    </div>
+  </div>
+  <div class="toolbar">
+    <input class="tin" id="q-subs" placeholder="🔍 اسم أو جوال..." oninput="renderSubs()">
+    <select class="tsel" id="fsub-region" onchange="renderSubs()"><option value="">كل المناطق</option><option>النجد الأحمر</option><option>النجد الأعلى</option><option>وسط السواق</option><option>مرعه</option></select>
+    <select class="tsel" id="fsub-status" onchange="renderSubs()"><option value="">كل الحالات</option><option>نشط</option><option>منتهي</option><option>معلق</option></select>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr>
+        <th>#</th><th>المشترك</th><th>الجوال</th>
+        <th class="hide-m">المنطقة</th><th class="hide-m">الباقة</th>
+        <th>الانتهاء</th><th class="hide-m">المبلغ</th><th>الحالة</th><th>إجراء</th>
+      </tr></thead>
+      <tbody id="subs-tbody"></tbody>
+    </table>
+    <div id="subs-empty" class="empty-state" style="display:none">
+      <span class="empty-ico">👤</span>
+      <div class="empty-txt">لا يوجد مشتركون بعد<br><small>اضغط "+ إضافة مشترك"</small></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+  PAGE: FINANCE
+════════════════════════════════════════ -->
+<div id="page-finance" class="page">
+  <div class="sh">
+    <div class="sh-left">
+      <div class="sh-icon" style="background:var(--green-dim)">💰</div>
+      <span class="sh-title">الإدارة المالية</span>
+    </div>
+    <button class="btn btn-cyan" onclick="openModal('m-expense')">+ إضافة معاملة</button>
+  </div>
+
+  <div class="kpi-row" id="fin-kpi"></div>
+
+  <div class="g2" style="margin-bottom:18px">
+    <div class="card">
+      <div class="card-title">الإيرادات الشهرية</div>
+      <div id="fin-rev-chart"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">المصروفات</div>
+      <div id="fin-exp-chart"></div>
+    </div>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr>
+        <th>#</th><th>الوصف</th><th>النوع</th>
+        <th class="hide-m">التاريخ</th><th>المبلغ</th><th>ملاحظات</th><th>إجراء</th>
+      </tr></thead>
+      <tbody id="fin-tbody"></tbody>
+    </table>
+    <div id="fin-empty" class="empty-state" style="display:none">
+      <span class="empty-ico">💳</span>
+      <div class="empty-txt">لا توجد معاملات مالية بعد</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+  PAGE: REPORTS
+════════════════════════════════════════ -->
+<div id="page-reports" class="page">
+  <div class="sh">
+    <div class="sh-left">
+      <div class="sh-icon" style="background:var(--blue-dim)">📊</div>
+      <span class="sh-title">التقارير</span>
+    </div>
+  </div>
+  <div class="report-grid">
+    <div class="report-item" onclick="genReport('sites')">
+      <div class="report-ico">📡</div>
+      <div><div class="report-name">تقرير المواقع</div><div class="report-desc">حالة جميع المواقع</div></div>
+    </div>
+    <div class="report-item" onclick="genReport('devices')">
+      <div class="report-ico">🔧</div>
+      <div><div class="report-name">تقرير الأجهزة</div><div class="report-desc">حصر المعدات والأجهزة</div></div>
+    </div>
+    <div class="report-item" onclick="genReport('faults')">
+      <div class="report-ico">🚨</div>
+      <div><div class="report-name">تقرير الأعطال</div><div class="report-desc">سجل الأعطال والإصلاحات</div></div>
+    </div>
+    <div class="report-item" onclick="genReport('subscribers')">
+      <div class="report-ico">👥</div>
+      <div><div class="report-name">تقرير المشتركين</div><div class="report-desc">الاشتراكات والتجديدات</div></div>
+    </div>
+    <div class="report-item" onclick="genReport('finance')">
+      <div class="report-ico">💰</div>
+      <div><div class="report-name">التقرير المالي</div><div class="report-desc">الإيرادات والمصروفات</div></div>
+    </div>
+    <div class="report-item" onclick="genReport('full')">
+      <div class="report-ico">📋</div>
+      <div><div class="report-name">تقرير شامل</div><div class="report-desc">تقرير كامل للشبكة</div></div>
+    </div>
+  </div>
+  <div class="card" id="report-output" style="display:none">
+    <div class="card-title" id="report-title"></div>
+    <div id="report-body"></div>
+    <div style="margin-top:16px;display:flex;gap:8px">
+      <button class="btn btn-cyan btn-sm" onclick="printReport()">🖨️ طباعة</button>
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('report-output').style.display='none'">إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+  PAGE: ACTIVITY LOG
+════════════════════════════════════════ -->
+<div id="page-activity" class="page">
+  <div class="sh">
+    <div class="sh-left">
+      <div class="sh-icon" style="background:var(--blue-dim)">📋</div>
+      <span class="sh-title">سجل النشاط</span>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="DB.activity=[];save();renderActivity();toast('تم مسح السجل','warn')">مسح السجل</button>
+  </div>
+  <div class="card">
+    <div class="tl" id="activity-log"></div>
+    <div id="activity-empty" class="empty-state" style="display:none">
+      <span class="empty-ico">📋</span>
+      <div class="empty-txt">لا توجد نشاطات مسجلة بعد</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+  PAGE: SETTINGS
+════════════════════════════════════════ -->
+<div id="page-settings" class="page">
+  <div class="sh">
+    <div class="sh-left">
+      <div class="sh-icon" style="background:var(--purple-dim)">⚙️</div>
+      <span class="sh-title">الإعدادات</span>
+    </div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">معلومات الشبكة</div>
+      <div class="fg"><label>اسم الشبكة</label><input id="cfg-name" value="FIBAR NET" placeholder="اسم الشبكة"></div>
+      <div class="fg"><label>اسم المدير</label><input id="cfg-owner" placeholder="اسمك الكامل"></div>
+      <div class="fg"><label>رقم الجوال</label><input id="cfg-phone" placeholder="77XXXXXXX" inputmode="tel"></div>
+      <button class="btn btn-cyan btn-sm" onclick="saveSettings()">💾 حفظ الإعدادات</button>
+    </div>
+    <div class="card">
+      <div class="card-title">البيانات</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <button class="btn btn-cyan btn-sm" onclick="exportData()">📤 تصدير البيانات (JSON)</button>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('importFile').click()">📥 استيراد بيانات</button>
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+        <button class="btn btn-red btn-sm" onclick="resetData()">🗑️ مسح كل البيانات</button>
+      </div>
+      <div style="margin-top:16px;font-size:11px;color:var(--txt3);line-height:1.8">
+        <div>إصدار التطبيق: <span style="color:var(--cyan);font-family:var(--mono)">3.0 Pro</span></div>
+        <div>حالة التخزين: <span style="color:var(--green);font-family:var(--mono)" id="storage-used">–</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  </div><!-- /main -->
+</div><!-- /content-area -->
+</div><!-- /shell -->
+
+<!-- MOBILE BOTTOM TABS -->
+<div class="mobile-tabs" id="mobile-tabs">
+  <div class="mtab active" data-page="dashboard" onclick="goM('dashboard',this)"><span class="mti">🏠</span>الرئيسية</div>
+  <div class="mtab" data-page="sites" onclick="goM('sites',this)"><span class="mti">📡</span>المواقع<span class="mtab-badge" id="mb-sites" style="display:none"></span></div>
+  <div class="mtab" data-page="faults" onclick="goM('faults',this)"><span class="mti">🚨</span>الأعطال<span class="mtab-badge" id="mb-faults" style="display:none"></span></div>
+  <div class="mtab" data-page="tasks" onclick="goM('tasks',this)"><span class="mti">✅</span>المهام<span class="mtab-badge" id="mb-tasks" style="display:none"></span></div>
+  <div class="mtab" data-page="subscribers" onclick="goM('subscribers',this)"><span class="mti">👥</span>المشتركون</div>
+  <div class="mtab" data-page="settings" onclick="goM('settings',this)"><span class="mti">⚙️</span>المزيد</div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- ════════════════════════════════════════
+  MODALS
+════════════════════════════════════════ -->
+
+<!-- Site -->
+<div class="modal-bg" id="m-site">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title">📡 <span id="m-site-title">إضافة موقع</span></div>
+      <button class="modal-close" onclick="closeModal('m-site')">✕</button>
+    </div>
+    <input type="hidden" id="es-id">
+    <div class="fgr">
+      <div class="fg"><label>اسم الموقع *</label><input id="s-name" placeholder="بيت/محل/ورشة..."></div>
+      <div class="fg"><label>المنطقة *</label>
+        <select id="s-region"><option>النجد الأحمر</option><option>النجد الأعلى</option><option>وسط السواق</option><option>مرعه</option><option>نقطة رئيسية</option></select></div>
+    </div>
+    <div class="fgr">
+      <div class="fg"><label>نوع النقطة</label>
+        <select id="s-type"><option>نقطة فرعية</option><option>نقطة رئيسية</option></select></div>
+      <div class="fg"><label>المسؤول</label><input id="s-owner" placeholder="اسم صاحب الموقع"></div>
+    </div>
+    <div class="fgr">
+      <div class="fg"><label>رقم الجوال</label><input id="s-phone" inputmode="tel" placeholder="77XXXXXXX"></div>
+      <div class="fg"><label>الحالة</label>
+        <select id="s-status"><option>نشط</option><option>يحتاج متابعة</option><option>معطل</option></select></div>
+    </div>
+    <div class="fg"><label>الإحداثيات (اختياري)</label><input id="s-coords" placeholder="مثال: 15.352, 44.206"></div>
+    <div class="fg"><label>ملاحظات</label><textarea id="s-notes" placeholder="أجهزة مثبتة، تفاصيل الاتصال..."></textarea></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('m-site')">إلغاء</button>
+      <button class="btn btn-cyan" onclick="saveSite()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
+
+<!-- Device -->
+<div class="modal-bg" id="m-device">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title">🔧 <span id="m-dev-title">إضافة جهاز</span></div>
+      <button class="modal-close" onclick="closeModal('m-device')">✕</button>
+    </div>
+    <input type="hidden" id="ed-id">
+    <div class="fgr">
+      <div class="fg"><label>اسم الجهاز *</label><input id="d-name" placeholder="مثال: مودم KT-708"></div>
+      <div class="fg"><label>النوع *</label>
+        <select id="d-type"><option>مودم</option><option>بطارية</option><option>لوح طاقة</option><option>منظم</option><option>أنتينا</option><option>سويتش</option><option>محول</option><option>صندوق</option><option>كابل</option><option>أخرى</option></select></div>
+    </div>
+    <div class="fgr">
+      <div class="fg"><label>المواصفات</label><input id="d-spec" placeholder="مثال: 100Ah، 170W، KT-708A"></div>
+      <div class="fg"><label>الكمية</label><input id="d-qty" type="number" value="1" min="1"></div>
+    </div>
+    <div class="fgr">
+      <div class="fg"><label>الموقع</label><input id="d-site" placeholder="اسم الموقع أو المنطقة"></div>
+      <div class="fg"><label>الحالة</label>
+        <select id="d-status"><option>يعمل</option><option>يحتاج صيانة</option><option>معطل</option></select></div>
+    </div>
+    <div class="fgr">
+      <div class="fg"><label>تاريخ الشراء</label><input id="d-date" type="date"></div>
+      <div class="fg"><label>التكلفة (ريال)</label><input id="d-cost" type="number" placeholder="0"></div>
+    </div>
+    <div class="fg"><label>ملاحظات</label><textarea id="d-notes" placeholder="تفاصيل إضافية..."></textarea></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('m-device')">إلغاء</button>
+      <button class="btn btn-cyan" onclick="saveDevice()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
+
+<!-- Fault -->
+<div class="modal-bg" id="m-fault">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title">🚨 تسجيل عطل</div>
+      <button class="modal-close" onclick="closeModal('m-fault')">✕</button>
+    </div>
+    <div class="fgr">
+      <div class="fg"><label>الموقع المتأثر *</label><input id="f-site" placeholder="اسم الموقع"></div>
+      <div class="fg"><label>المنطقة</label>
+        <select id="f-region"><option>النجد الأحمر</option><option>النجد الأعلى</option><option>وسط السواق</option><option>مرعه</option><option>نقطة رئيسية</option></select></div>
+    </div>
+    <div class="fgr">
+      <div class="fg"><label>نوع العطل</label>
+        <select id="f-type"><option>انقطاع الإنترنت</option><option>عطل جهاز</option><option>انقطاع الكهرباء</option><option>مشكلة أنتينا</option><option>ضعف الإشارة</option><option>أخرى</option></select></div>
+      <div class="fg"><label>الأولوية</label>
+        <select id="f-pri"><option>عادية</option><option>عاجلة</option><option>حرجة</option></select></div>
+    </div>
+    <div class="fg"><label>وصف المشكلة *</label><textarea id="f-desc" placeholder="اشرح المشكلة بالتفصيل..."></textarea></div>
+    <div class="fgr">
+      <div class="fg"><label>جوال التواصل</label><input id="f-phone" inputmode="tel" placeholder="77XXXXXXX"></div>
+      <div class="fg"><label>المسؤول عن الإصلاح</label><input id="f-assigned" placeholder="الاسم"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('m-fault')">إلغاء</button>
+      <button class="btn btn-red" onclick="saveFault()">🚨 تسجيل العطل</button>
+    </div>
+  </div>
+</div>
+
+<!-- Task -->
+<div class="modal-bg" id="m-task">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title">✅ إضافة مهمة</div>
+      <button class="modal-close" onclick="closeModal('m-task')">✕</button>
+    </div>
+    <div class="fg"><label>عنوان المهمة *</label><input id="t-title" placeholder="وصف المهمة..."></div>
+    <div class="fgr">
+      <div class="fg"><label>الأولوية</label>
+        <select id="t-pri"><option>متوسطة</option><option>عالية</option><option>منخفضة</option></select></div>
+      <div class="fg"><label>الموقع / المنطقة</label><input id="t-site" placeholder="اختياري"></div>
+    </div>
+    <div class="fgr">
+      <div class="fg"><label>الموعد النهائي</label><input id="t-due" type="date"></div>
+      <div class="fg"><label>المسؤول</label><input id="t-assigned" placeholder="الاسم"></div>
+    </div>
+    <div class="fg"><label>التفاصيل</label><textarea id="t-notes" placeholder="تفاصيل إضافية..."></textarea></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('m-task')">إلغاء</button>
+      <button class="btn btn-cyan" onclick="saveTask()">💾 حفظ المهمة</button>
+    </div>
+  </div>
+</div>
+
+<!-- Maintenance -->
+<div class="modal-bg" id="m-maint">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title">🛠️ جدولة صيانة</div>
+      <button class="modal-close" onclick="closeModal('m-maint')">✕</button>
+    </div>
+    <div class="fg"><label>الموقع *</label><input id="mt-site" placeholder="اسم الموقع"></div>
+    <div class="fgr">
+      <div class="fg"><label>نوع الصيانة</label>
+        <select id="mt-type"><option>فحص دوري</option><option>تنظيف الألواح</option><option>فحص البطاريات</option><option>فحص الأنتينات</option><option>استبدال جهاز</option><option>أخرى</option></select></div>
+      <div class="fg"><label>تاريخ الصيانة</label><input id="mt-date" type="date"></div>
+    </div>
+    <div class="fg"><label>ملاحظات</label><textarea id="mt-notes" placeholder="ما الذي سيتم فحصه أو تغييره..."></textarea></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('m-maint')">إلغاء</button>
+      <button class="btn btn-amber" onclick="saveMaint()">📅 جدولة</button>
+    </div>
+  </div>
+</div>
+
+<!-- Subscriber -->
+<div class="modal-bg" id="m-sub">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title">👤 <span id="m-sub-title">إضافة مشترك</span></div>
+      <button class="modal-close" onclick="closeModal('m-sub')">✕</button>
+    </div>
+    <input type="hidden" id="esub-id">
+    <div class="fgr">
+      <div class="fg"><label>الاسم *</label><input id="sub-name" placeholder="الاسم الكامل"></div>
+      <div class="fg"><label>الجوال *</label><input id="sub-phone" inputmode="tel" placeholder="77XXXXXXX"></div>
+    </div>
+    <div class="fgr">
+      <div class="fg"><label>المنطقة</label>
+        <select id="sub-region"><option>النجد الأحمر</option><option>النجد الأعلى</option><option>وسط السواق</option><option>مرعه</option></select></div>
+      <div class="fg"><label>الباقة</label>
+        <select id="sub-plan"><option>شهرية</option><option>3 أشهر</option><option>6 أشهر</option><option>سنوية</option></select></div>
+    </div>
+    <div class="fgr">
+      <div class="fg"><label>تاريخ الانتهاء</label><input id="sub-expiry" type="date"></div>
+      <div class="fg"><label>المبلغ الشهري (ريال)</label><input id="sub-amount" type="number" placeholder="0"></div>
+    </div>
+    <div class="fg"><label>ملاحظات</label><textarea id="sub-notes" placeholder="..."></textarea></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('m-sub')">إلغاء</button>
+      <button class="btn btn-green" onclick="saveSub()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
+
+<!-- Expense -->
+<div class="modal-bg" id="m-expense">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title">💳 إضافة معاملة مالية</div>
+      <button class="modal-close" onclick="closeModal('m-expense')">✕</button>
+    </div>
+    <div class="fg"><label>الوصف *</label><input id="exp-desc" placeholder="مثال: شراء مودم، إيراد اشتراك..."></div>
+    <div class="fgr">
+      <div class="fg"><label>النوع</label>
+        <select id="exp-type"><option>مصروف</option><option>إيراد</option></select></div>
+      <div class="fg"><label>المبلغ (ريال) *</label><input id="exp-amount" type="number" placeholder="0"></div>
+    </div>
+    <div class="fgr">
+      <div class="fg"><label>التاريخ</label><input id="exp-date" type="date"></div>
+      <div class="fg"><label>التصنيف</label>
+        <select id="exp-cat"><option>أجهزة</option><option>صيانة</option><option>اشتراكات مشتركين</option><option>نقل</option><option>أخرى</option></select></div>
+    </div>
+    <div class="fg"><label>ملاحظات</label><textarea id="exp-notes" placeholder="..."></textarea></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('m-expense')">إلغاء</button>
+      <button class="btn btn-green" onclick="saveExpense()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════════
+const SK='fibarnet_pro_v1';
+const today=()=>new Date().toISOString().split('T')[0];
+const now=()=>new Date().toLocaleString('ar');
+
+const DEF={
+  sites:[
+    {id:1,name:'بيت شاكر أحمد دماج',region:'نقطة رئيسية',type:'نقطة رئيسية',owner:'شاكر أحمد',phone:'777004702',status:'نشط',coords:'',notes:'منظم MPPT 30W، بطارية 100Ah، ألواح هوب 220W',updated:today()},
+    {id:2,name:'بيت فيصل قايد دماج',region:'نقطة رئيسية',type:'نقطة رئيسية',owner:'فيصل قايد',phone:'777945601',status:'نشط',coords:'',notes:'مودم 7200، صحن M2، سويتش',updated:today()},
+    {id:3,name:'بقالة الامتياز',region:'نقطة رئيسية',type:'نقطة رئيسية',owner:'محمد أبو حديد',phone:'771889429',status:'نشط',coords:'',notes:'منظم جرملي، مودم KTY 407',updated:today()},
+    {id:4,name:'منزل قيس دماج – الورشات',region:'نقطة رئيسية',type:'نقطة رئيسية',owner:'قيس علي دماج',phone:'777879982',status:'يحتاج متابعة',coords:'',notes:'⚠️ عدد الألواح الشمسية غير محدد (2 أو 3)',updated:today()},
+    {id:5,name:'حارة بشير دماج',region:'نقطة رئيسية',type:'نقطة رئيسية',owner:'محمد أبو حديد',phone:'771889429',status:'يحتاج متابعة',coords:'',notes:'⚠️ يحتاج لوح 60W إضافي',updated:today()},
+    {id:6,name:'فوق محل صلاح النقيب',region:'النجد الأحمر',type:'نقطة فرعية',owner:'صلاح النقيب',phone:'779570124',status:'نشط',coords:'',notes:'',updated:today()},
+    {id:7,name:'منزل ياسر الشرجي',region:'النجد الأحمر',type:'نقطة فرعية',owner:'ياسر سعيد',phone:'772916527',status:'نشط',coords:'',notes:'',updated:today()},
+    {id:8,name:'منزل علاء الدين التممي',region:'النجد الأحمر',type:'نقطة فرعية',owner:'علاء الدين التممي',phone:'778281642',status:'يحتاج متابعة',coords:'',notes:'⚠️ نوع المودم غير محدد',updated:today()},
+    {id:9,name:'بيت فهد علي العرش',region:'النجد الأحمر',type:'نقطة فرعية',owner:'فهد علي',phone:'–',status:'يحتاج متابعة',coords:'',notes:'⚠️ نوع المودم غير محدد',updated:today()},
+    {id:10,name:'بقالة هارون جعفر',region:'النجد الأحمر',type:'نقطة فرعية',owner:'هارون أحمد',phone:'776352746',status:'نشط',coords:'',notes:'',updated:today()},
+    {id:11,name:'محل أيمن العدهي',region:'النجد الأحمر',type:'نقطة فرعية',owner:'أيمن العدهي',phone:'776156976',status:'نشط',coords:'',notes:'لوح 50W + بطارية 18Ah',updated:today()},
+    {id:12,name:'بيت العدهي',region:'النجد الأحمر',type:'نقطة فرعية',owner:'–',phone:'–',status:'نشط',coords:'',notes:'مودم Nets AP',updated:today()},
+    {id:13,name:'محل المبروك ألمنيوم',region:'النجد الأحمر',type:'نقطة فرعية',owner:'صدام المبروك',phone:'776938854',status:'نشط',coords:'',notes:'لوح 50W + بطارية 18Ah',updated:today()},
+    {id:14,name:'محل المبروك الحديد',region:'النجد الأحمر',type:'نقطة فرعية',owner:'غيلان المبروك',phone:'775384163',status:'نشط',coords:'',notes:'',updated:today()},
+    {id:15,name:'محلال كمال تاج الدين',region:'النجد الأحمر',type:'نقطة فرعية',owner:'كمال تاج الدين',phone:'777015446',status:'نشط',coords:'',notes:'',updated:today()},
+    {id:16,name:'منزل صالح أبوراس',region:'النجد الأحمر',type:'نقطة فرعية',owner:'صالح حمود',phone:'777928806',status:'نشط',coords:'',notes:'',updated:today()},
+    {id:17,name:'محل أحمد المجعاره',region:'النجد الأحمر',type:'نقطة فرعية',owner:'أحمد ناجي',phone:'775377880',status:'نشط',coords:'',notes:'',updated:today()},
+    {id:18,name:'ورشة ناجي هوشه',region:'النجد الأحمر',type:'نقطة فرعية',owner:'توفيق ناجي',phone:'775618980',status:'نشط',coords:'',notes:'',updated:today()},
+    {id:19,name:'منزل ياسر علوي دماج',region:'النجد الأحمر',type:'نقطة فرعية',owner:'ياسر علوي',phone:'777188630',status:'نشط',coords:'',notes:'',updated:today()},
+    {id:20,name:'بيت صادق شملان',region:'النجد الأعلى',type:'نقطة فرعية',owner:'نجيب شملان',phone:'775654716',status:'نشط',coords:'',notes:'مودم 7200',updated:today()},
+    {id:21,name:'بيت زياد مهدي',region:'النجد الأعلى',type:'نقطة فرعية',owner:'زياد مهدي',phone:'776356328',status:'نشط',coords:'',notes:'لوح 50W + بطارية 18Ah',updated:today()},
+    {id:22,name:'فوق المصوِّرة',region:'النجد الأعلى',type:'نقطة فرعية',owner:'–',phone:'–',status:'نشط',coords:'',notes:'',updated:today()},
+    {id:23,name:'صالون نصر الحلاق',region:'النجد الأعلى',type:'نقطة فرعية',owner:'نصر سمير',phone:'772433533',status:'نشط',coords:'',notes:'',updated:today()},
+    {id:24,name:'محل يوسف دحان',region:'النجد الأعلى',type:'نقطة فرعية',owner:'يوسف مجيب',phone:'777597456',status:'نشط',coords:'',notes:'لوح 50W + بطارية 18Ah',updated:today()},
+    {id:25,name:'فوق بيت أحمد علي صالح',region:'النجد الأعلى',type:'نقطة فرعية',owner:'أحمد علي',phone:'–',status:'يحتاج متابعة',coords:'',notes:'⚠️ نوع المودمات غير محدد',updated:today()},
+    {id:26,name:'منزل سلطان مهدي',region:'النجد الأعلى',type:'نقطة فرعية',owner:'سلطان عبده',phone:'772281699',status:'يحتاج متابعة',coords:'',notes:'⚠️ نوع المودم غير محدد',updated:today()},
+    {id:27,name:'فوق المحلايات',region:'وسط السواق',type:'نقطة فرعية',owner:'رياض المحلوي',phone:'–',status:'نشط',coords:'',notes:'مودم KTY 407',updated:today()},
+    {id:28,name:'محل عمران المفتي',region:'وسط السواق',type:'نقطة فرعية',owner:'عمران المفتي',phone:'–',status:'نشط',coords:'',notes:'مودم 7200',updated:today()},
+    {id:29,name:'فوق المستوصف',region:'وسط السواق',type:'نقطة فرعية',owner:'بلال جمعان',phone:'–',status:'نشط',coords:'',notes:'مودم KTY 407',updated:today()},
+    {id:30,name:'عمارة الشيخ حسين دماج',region:'وسط السواق',type:'نقطة فرعية',owner:'–',phone:'781630049',status:'نشط',coords:'',notes:'مودم أسود 407',updated:today()},
+    {id:31,name:'بيت جميل كرامي',region:'مرعه',type:'نقطة رئيسية',owner:'جميل كرامي',phone:'–',status:'نشط',coords:'',notes:'سويتش D-Link 8p، مودم COZ 407، 2 أنتينا مرسِلة',updated:today()},
+    {id:32,name:'بيت عبده العبادي',region:'مرعه',type:'نقطة رئيسية',owner:'عبده العبادي',phone:'–',status:'نشط',coords:'',notes:'3 أنتينات مرسِلة',updated:today()},
+    {id:33,name:'بيت حمدي الشريف',region:'مرعه',type:'نقطة رئيسية',owner:'حمدي الشريف',phone:'–',status:'يحتاج متابعة',coords:'',notes:'⚠️ التحقق من وجود مودم كبير',updated:today()},
+    {id:34,name:'بيت أخو مروان الرزمي',region:'مرعه',type:'نقطة رئيسية',owner:'–',phone:'–',status:'نشط',coords:'',notes:'أنتينا مرسِلة للمودمات اللواقط',updated:today()},
+    {id:35,name:'بيت وليد العماقي',region:'مرعه',type:'نقطة فرعية',owner:'وليد العماقي',phone:'–',status:'نشط',coords:'',notes:'← جميل كرامي',updated:today()},
+    {id:36,name:'بيت طلال العطار',region:'مرعه',type:'نقطة فرعية',owner:'طلال العطار',phone:'776188724',status:'نشط',coords:'',notes:'← عبده العبادي',updated:today()},
+    {id:37,name:'بيت طه مرعه',region:'مرعه',type:'نقطة فرعية',owner:'طه مرعه',phone:'773997891',status:'نشط',coords:'',notes:'يلتقط من الشرف',updated:today()},
+    {id:38,name:'بيت صقر الرزمي',region:'مرعه',type:'نقطة فرعية',owner:'صقر الرزمي',phone:'780038201',status:'نشط',coords:'',notes:'الرزم',updated:today()},
+    {id:39,name:'مجلس مرعه العليا',region:'مرعه',type:'نقطة فرعية',owner:'–',phone:'–',status:'نشط',coords:'',notes:'تحت الشرف',updated:today()},
+    {id:40,name:'مجلس مرعه السفلى',region:'مرعه',type:'نقطة فرعية',owner:'–',phone:'–',status:'نشط',coords:'',notes:'← جميل كرامي',updated:today()},
+    {id:41,name:'مع إبراهيم',region:'مرعه',type:'نقطة فرعية',owner:'إبراهيم',phone:'–',status:'يحتاج متابعة',coords:'',notes:'⚠️ تحديد الموقع بدقة',updated:today()},
+  ],
+  devices:[
+    {id:1,name:'مودم KT-708',type:'مودم',spec:'KT-708',site:'النجد الأحمر',qty:23,status:'يعمل',date:'',cost:0,notes:'الأكثر انتشاراً'},
+    {id:2,name:'مودم LG-7200',type:'مودم',spec:'LG-7200',site:'متعدد',qty:8,status:'يعمل',date:'',cost:0,notes:''},
+    {id:3,name:'مودم KT-708A',type:'مودم',spec:'KT-708A',site:'شعب الشلالي/دليهه',qty:2,status:'يعمل',date:'',cost:0,notes:''},
+    {id:4,name:'مودم KT-412',type:'مودم',spec:'KT-412',site:'وسط السواق',qty:2,status:'يعمل',date:'',cost:0,notes:''},
+    {id:5,name:'مودم COZ-407',type:'مودم',spec:'COZ-407',site:'مرعه',qty:2,status:'يعمل',date:'',cost:0,notes:''},
+    {id:6,name:'مودم Dlink',type:'مودم',spec:'Dlink',site:'النجد الأعلى',qty:1,status:'يعمل',date:'',cost:0,notes:''},
+    {id:7,name:'بطارية جل كربون 75Ah',type:'بطارية',spec:'75Ah',site:'مرعه',qty:3,status:'يعمل',date:'',cost:0,notes:''},
+    {id:8,name:'بطارية نابكو 100Ah',type:'بطارية',spec:'100Ah',site:'بيت شاكر',qty:1,status:'يعمل',date:'',cost:0,notes:''},
+    {id:9,name:'بطارية 18Ah',type:'بطارية',spec:'18Ah',site:'متعدد',qty:12,status:'يعمل',date:'',cost:0,notes:''},
+    {id:10,name:'بطارية 75Ah',type:'بطارية',spec:'75Ah',site:'متعدد',qty:2,status:'يعمل',date:'',cost:0,notes:''},
+    {id:11,name:'بطارية 150Ah',type:'بطارية',spec:'150Ah',site:'موقع الورشات',qty:1,status:'يعمل',date:'',cost:0,notes:''},
+    {id:12,name:'لوح هوب 170W',type:'لوح طاقة',spec:'170W',site:'متعدد',qty:8,status:'يعمل',date:'',cost:0,notes:''},
+    {id:13,name:'لوح هوب 220W',type:'لوح طاقة',spec:'220W',site:'بيت شاكر',qty:2,status:'يعمل',date:'',cost:0,notes:''},
+    {id:14,name:'لوح 60W',type:'لوح طاقة',spec:'60W',site:'حارة بشير',qty:1,status:'يحتاج صيانة',date:'',cost:0,notes:'⚠️ يحتاج لوح ثانٍ'},
+    {id:15,name:'لوح 50W',type:'لوح طاقة',spec:'50W',site:'متعدد',qty:12,status:'يعمل',date:'',cost:0,notes:''},
+    {id:16,name:'منظم جرملي 30W',type:'منظم',spec:'30W',site:'متعدد',qty:8,status:'يعمل',date:'',cost:0,notes:''},
+    {id:17,name:'منظم MPPT 30W',type:'منظم',spec:'MPPT 30W',site:'بيت شاكر',qty:1,status:'يعمل',date:'',cost:0,notes:''},
+    {id:18,name:'سويتش D-Link 8p',type:'سويتش',spec:'8 منافذ 12V',site:'مرعه',qty:4,status:'يعمل',date:'',cost:0,notes:''},
+    {id:19,name:'محول متغير الفلتيه',type:'محول',spec:'–',site:'متعدد',qty:10,status:'يعمل',date:'',cost:0,notes:''},
+    {id:20,name:'أنتينا مستقبِلة',type:'أنتينا',spec:'–',site:'مرعه',qty:4,status:'يعمل',date:'',cost:0,notes:''},
+    {id:21,name:'أنتينا مرسِلة',type:'أنتينا',spec:'–',site:'متعدد',qty:18,status:'يعمل',date:'',cost:0,notes:''},
+  ],
+  faults:[
+    {id:1,site:'بيت حمدي الشريف',region:'مرعه',type:'عطل جهاز',priority:'عاجلة',desc:'التحقق من وجود مودم كبير – غير مؤكد',phone:'–',assigned:'–',status:'مفتوح',date:today()},
+    {id:2,site:'حارة بشير دماج',region:'نقطة رئيسية',type:'عطل جهاز',priority:'عادية',desc:'يحتاج إضافة لوح طاقة شمسية 60W ثانٍ',phone:'771889429',assigned:'–',status:'مفتوح',date:today()},
+    {id:3,site:'منزل قيس دماج',region:'نقطة رئيسية',type:'عطل جهاز',priority:'عادية',desc:'عدد الألواح الشمسية غير محدد (2 أو 3)',phone:'777879982',assigned:'–',status:'مفتوح',date:today()},
+  ],
+  tasks:[
+    {id:1,title:'تحديد نوع مودم بيت التممي',priority:'عالية',site:'النجد الأحمر',due:'',assigned:'',notes:'',done:false},
+    {id:2,title:'تحديد نوع مودم بيت العرش',priority:'عالية',site:'النجد الأحمر',due:'',assigned:'',notes:'',done:false},
+    {id:3,title:'تحديد نوع مودم سلطان مهدي',priority:'عالية',site:'النجد الأعلى',due:'',assigned:'',notes:'',done:false},
+    {id:4,title:'تحديد موقع مودم إبراهيم (مرعه)',priority:'عالية',site:'مرعه',due:'',assigned:'',notes:'',done:false},
+    {id:5,title:'التحقق من مودم حمدي الشريف',priority:'عالية',site:'مرعه',due:'',assigned:'',notes:'',done:false},
+    {id:6,title:'إضافة لوح 60W لحارة بشير',priority:'متوسطة',site:'نقطة رئيسية',due:'',assigned:'',notes:'',done:false},
+    {id:7,title:'تحديد عدد الألواح في موقع الورشات',priority:'متوسطة',site:'نقطة رئيسية',due:'',assigned:'',notes:'',done:false},
+    {id:8,title:'توثيق أرقام FIBAR لجميع المودمات',priority:'متوسطة',site:'النجد الأحمر',due:'',assigned:'',notes:'',done:false},
+    {id:9,title:'تصوير أجهزة مرعه وتوثيقها',priority:'منخفضة',site:'مرعه',due:'',assigned:'',notes:'',done:false},
+    {id:10,title:'إضافة أرقام جوال المواقع الناقصة',priority:'منخفضة',site:'متعدد',due:'',assigned:'',notes:'',done:false},
+  ],
+  maintenance:[
+    {id:1,site:'بيت شاكر دماج',type:'فحص دوري',date:today(),notes:'فحص شهري للبطارية والمنظم',done:false},
+    {id:2,site:'مرعه – جميل كرامي',type:'تنظيف الألواح',date:today(),notes:'تنظيف الألواح الشمسية',done:false},
+  ],
+  subscribers:[],
+  finance:[],
+  activity:[
+    {type:'info',title:'تم تحميل النظام',desc:'تم تحميل بيانات الشبكة بنجاح',time:now()},
+    {type:'warn',title:'5 مهام معلقة',desc:'تحتاج إلى متابعة عاجلة',time:now()},
+    {type:'danger',title:'3 أعطال مفتوحة',desc:'تحتاج إلى إصلاح',time:now()},
+  ],
+  settings:{name:'FIBAR NET',owner:'',phone:''},
+  _id:{site:42,dev:22,fault:4,task:11,maint:3,sub:1,exp:1}
+};
+
+let DB;
+try{const r=localStorage.getItem(SK);DB=r?JSON.parse(r):JSON.parse(JSON.stringify(DEF));}
+catch{DB=JSON.parse(JSON.stringify(DEF));}
+function save(){try{localStorage.setItem(SK,JSON.stringify(DB));updateStorageInfo();}catch(e){}}
+function updateStorageInfo(){
+  try{
+    const s=localStorage.getItem(SK)||'';
+    const el=document.getElementById('storage-used');
+    if(el)el.textContent=`${(s.length/1024).toFixed(1)} KB`;
+  }catch{}
+}
+
+// ═══════════════════════════════════════════════
+//  NAV
+// ═══════════════════════════════════════════════
+const PAGE_TITLES={
+  dashboard:'لوحة التحكم',sites:'إدارة المواقع',devices:'الأجهزة والمعدات',
+  map:'هيكل الشبكة',faults:'سجل الأعطال',tasks:'إدارة المهام',
+  maintenance:'جدول الصيانة',subscribers:'المشتركون',finance:'الإدارة المالية',
+  reports:'التقارير',activity:'سجل النشاط',settings:'الإعدادات'
+};
+
+function go(page,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('.mtab').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  if(el)el.classList.add('active');
+  document.querySelectorAll(`[data-page="${page}"]`).forEach(n=>n.classList.add('active'));
+  document.getElementById('page-heading').textContent=PAGE_TITLES[page]||page;
+  renderAll();
+}
+function goM(page,el){go(page,el);}
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('collapsed');
+}
+
+// ═══════════════════════════════════════════════
+//  MODAL
+// ═══════════════════════════════════════════════
+function openModal(id){document.getElementById(id).classList.add('open');document.body.style.overflow='hidden';}
+function closeModal(id){document.getElementById(id).classList.remove('open');document.body.style.overflow='';}
+document.querySelectorAll('.modal-bg').forEach(m=>{
+  m.addEventListener('click',e=>{if(e.target===m)closeModal(m.id)});
+});
+
+// ═══════════════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════════════
+let _tt;
+const ICONS={success:'✅',error:'❌',warn:'⚠️',info:'ℹ️'};
+function toast(msg,type='success'){
+  const t=document.getElementById('toast');
+  t.textContent=(ICONS[type]||'')+(ICONS[type]?' ':'')+msg;
+  t.className='show';clearTimeout(_tt);_tt=setTimeout(()=>t.className='',3200);
+}
+
+// ═══════════════════════════════════════════════
+//  BADGES
+// ═══════════════════════════════════════════════
+function sb(s){
+  const m={نشط:'b-green','يعمل':'b-green','يحتاج متابعة':'b-amber','يحتاج صيانة':'b-amber',
+    معطل:'b-red',مفتوح:'b-red','قيد المعالجة':'b-amber',مغلق:'b-green',
+    منتهي:'b-red',معلق:'b-amber',مكتمل:'b-green'};
+  return`<span class="badge ${m[s]||'b-cyan'}">${s}</span>`;
+}
+function rb(r){
+  const m={'النجد الأحمر':'b-red','النجد الأعلى':'b-green','وسط السواق':'b-purple',
+    'مرعه':'b-amber','نقطة رئيسية':'b-cyan'};
+  return`<span class="badge ${m[r]||'b-blue'}">${r}</span>`;
+}
+function tb(t){
+  const m={مودم:'b-cyan',بطارية:'b-amber','لوح طاقة':'b-green',منظم:'b-teal',
+    أنتينا:'b-purple',سويتش:'b-red',محول:'b-blue'};
+  return`<span class="badge ${m[t]||'b-blue'}">${t}</span>`;
+}
+function pri(p){
+  const m={حرجة:'b-red',عاجلة:'b-amber',عادية:'b-blue',عالية:'b-red',متوسطة:'b-amber',منخفضة:'b-green'};
+  return`<span class="badge ${m[p]||'b-blue'}">${p}</span>`;
+}
+
+// ═══════════════════════════════════════════════
+//  DASHBOARD
+// ═══════════════════════════════════════════════
+function renderDashboard(){
+  const active=DB.sites.filter(s=>s.status==='نشط').length;
+  const warn=DB.sites.filter(s=>s.status==='يحتاج متابعة').length;
+  const fOpen=DB.faults.filter(f=>f.status==='مفتوح').length;
+  const tOpen=DB.tasks.filter(t=>!t.done).length;
+  const totalDevices=DB.devices.reduce((a,d)=>a+d.qty,0);
+  const expSoon=DB.subscribers.filter(s=>{
+    if(!s.expiry)return false;
+    const d=(new Date(s.expiry)-new Date())/86400000;
+    return d>=0&&d<=7;
+  }).length;
+
+  document.getElementById('kpi-row').innerHTML=[
+    {ico:'📡',num:DB.sites.length,lbl:'إجمالي المواقع',c:'var(--cyan)',trend:'nu',tv:'–'},
+    {ico:'✅',num:active,lbl:'مواقع نشطة',c:'var(--green)',trend:'up',tv:`${Math.round(active/DB.sites.length*100)}%`},
+    {ico:'⚠️',num:warn,lbl:'تحتاج متابعة',c:'var(--amber)',trend:warn>3?'dn':'nu',tv:warn>0?'فحص':'–'},
+    {ico:'🚨',num:fOpen,lbl:'أعطال مفتوحة',c:'var(--red)',trend:fOpen>0?'dn':'up',tv:fOpen?'عاجل':'ممتاز'},
+    {ico:'🔌',num:totalDevices,lbl:'إجمالي الأجهزة',c:'var(--purple)',trend:'nu',tv:'وحدة'},
+    {ico:'✅',num:tOpen,lbl:'مهام معلقة',c:'var(--teal)',trend:'nu',tv:`${DB.tasks.length} إجمالي`},
+    {ico:'👥',num:DB.subscribers.length,lbl:'المشتركون',c:'#60a5fa',trend:'nu',tv:expSoon?`${expSoon} تنتهي`:'–'},
+    {ico:'💰',num:DB.finance.filter(f=>f.type==='إيراد').reduce((a,f)=>a+Number(f.amount||0),0),lbl:'إجمالي الإيرادات (ر)',c:'var(--green)',trend:'nu',tv:'ريال'},
+  ].map(k=>`
+    <div class="kpi" style="--kc:${k.c}">
+      <div class="kpi-glow"></div>
+      <div class="kpi-top">
+        <div class="kpi-ico">${k.ico}</div>
+        <div class="kpi-trend ${k.trend}">${k.tv}</div>
+      </div>
+      <div class="kpi-num">${typeof k.num==='number'?k.num.toLocaleString('ar'):k.num}</div>
+      <div class="kpi-lbl">${k.lbl}</div>
+      <div class="kpi-bar"></div>
+    </div>`).join('');
+
+  document.getElementById('status-row').innerHTML=[
+    {lbl:'النجد الأحمر',n:DB.sites.filter(s=>s.region==='النجد الأحمر').length,c:'var(--red)'},
+    {lbl:'النجد الأعلى',n:DB.sites.filter(s=>s.region==='النجد الأعلى').length,c:'var(--green)'},
+    {lbl:'وسط السواق',n:DB.sites.filter(s=>s.region==='وسط السواق').length,c:'var(--purple)'},
+    {lbl:'مرعه',n:DB.sites.filter(s=>s.region==='مرعه').length,c:'var(--amber)'},
+    {lbl:'نقاط رئيسية',n:DB.sites.filter(s=>s.region==='نقطة رئيسية').length,c:'var(--cyan)'},
+  ].map(p=>`
+    <div class="status-pill">
+      <span class="status-led" style="background:${p.c};box-shadow:0 0 5px ${p.c}"></span>
+      ${p.lbl}
+      <span style="font-family:var(--mono);font-weight:700;color:${p.c}">${p.n}</span>
+    </div>`).join('');
+
+  const alerts=[
+    {type:'danger',title:'بيت حمدي الشريف – مرعه',desc:'التحقق من وجود مودم كبير مطلوب',tag:'⚠️ معلق'},
+    {type:'warn',title:'4 مواقع – نوع المودم غير محدد',desc:'التممي · العرش · سلطان مهدي · إبراهيم',tag:'📋 مطلوب'},
+    {type:'warn',title:'حارة بشير دماج',desc:'إضافة لوح طاقة شمسية 60W مطلوبة',tag:'🔧 صيانة'},
+    {type:'warn',title:'موقع الورشات',desc:'عدد الألواح الشمسية يحتاج تأكيد (2 أو 3)',tag:'📋 تحقق'},
+    {type:'info',title:'3 مناطق جديدة في السجل',desc:'شعب الشلالي · دليهه · الأكمه',tag:'✨ جديد'},
+    ...(expSoon?[{type:'warn',title:`${expSoon} اشتراكات تنتهي قريباً`,desc:'راجع قسم المشتركين للتجديد',tag:'⏰ تجديد'}]:[]),
+  ];
+  document.getElementById('dash-alerts').innerHTML=alerts.map(a=>`
+    <div class="af-item ${a.type}">
+      <div class="af-led ${a.type}"></div>
+      <div class="af-body">
+        <div class="af-title">${a.title}</div>
+        <div class="af-desc">${a.desc}</div>
+      </div>
+      <div class="af-tag">${a.tag}</div>
+    </div>`).join('');
+
+  const tlColors={info:'var(--cyan)',warn:'var(--amber)',danger:'var(--red)',success:'var(--green)'};
+  document.getElementById('dash-activity').innerHTML=DB.activity.slice(0,6).map(a=>`
+    <div class="tl-item">
+      <div class="tl-dot-wrap">
+        <div class="tl-dot" style="background:${tlColors[a.type]||'var(--cyan)'}"></div>
+        <div class="tl-line"></div>
+      </div>
+      <div class="tl-body">
+        <div class="tl-title">${a.title}</div>
+        <div class="tl-desc">${a.desc}</div>
+        <div class="tl-time">${a.time}</div>
+      </div>
+    </div>`).join('');
+
+  const regionData=[
+    {lbl:'النجد الأحمر',n:DB.sites.filter(s=>s.region==='النجد الأحمر').length,c:'var(--red)'},
+    {lbl:'مرعه',n:DB.sites.filter(s=>s.region==='مرعه').length,c:'var(--amber)'},
+    {lbl:'النجد الأعلى',n:DB.sites.filter(s=>s.region==='النجد الأعلى').length,c:'var(--green)'},
+    {lbl:'وسط السواق',n:DB.sites.filter(s=>s.region==='وسط السواق').length,c:'var(--purple)'},
+    {lbl:'نقطة رئيسية',n:DB.sites.filter(s=>s.region==='نقطة رئيسية').length,c:'var(--cyan)'},
+  ];
+  const mxR=Math.max(...regionData.map(r=>r.n),1);
+  document.getElementById('chart-region').innerHTML=regionData.map(r=>`
+    <div class="bc-row"><div class="bc-lbl">${r.lbl}</div>
+      <div class="bc-track"><div class="bc-fill" style="width:${r.n/mxR*100}%;background:${r.c}"></div></div>
+      <div class="bc-val" style="color:${r.c}">${r.n}</div></div>`).join('');
+
+  const modemData=[{lbl:'KT-708',n:23,c:'var(--green)'},{lbl:'LG-7200',n:8,c:'var(--cyan)'},
+    {lbl:'KT-708A',n:2,c:'var(--purple)'},{lbl:'KT-412',n:2,c:'var(--amber)'},{lbl:'أخرى',n:2,c:'var(--red)'}];
+  const mxM=Math.max(...modemData.map(m=>m.n));
+  document.getElementById('chart-modems').innerHTML=modemData.map(m=>`
+    <div class="bc-row"><div class="bc-lbl">${m.lbl}</div>
+      <div class="bc-track"><div class="bc-fill" style="width:${m.n/mxM*100}%;background:${m.c}"></div></div>
+      <div class="bc-val" style="color:${m.c}">${m.n}</div></div>`).join('');
+
+  const stData=[
+    {lbl:'نشط',n:active,c:'var(--green)'},{lbl:'يحتاج متابعة',n:warn,c:'var(--amber)'},
+    {lbl:'معطل',n:DB.sites.filter(s=>s.status==='معطل').length,c:'var(--red)'},
+  ];
+  const mxS=Math.max(...stData.map(s=>s.n),1);
+  document.getElementById('chart-status').innerHTML=stData.map(s=>`
+    <div class="bc-row"><div class="bc-lbl">${s.lbl}</div>
+      <div class="bc-track"><div class="bc-fill" style="width:${s.n/mxS*100}%;background:${s.c}"></div></div>
+      <div class="bc-val" style="color:${s.c}">${s.n}</div></div>`).join('');
+
+  setBadge('nb-sites',warn);setBadge('mb-sites',warn);
+  setBadge('nb-faults',fOpen);setBadge('mb-faults',fOpen);
+  setBadge('nb-tasks',tOpen);setBadge('mb-tasks',tOpen);
+  const subWarn=expSoon+DB.subscribers.filter(s=>s.status==='منتهي').length;
+  setBadge('nb-subs',subWarn);
+}
+function setBadge(id,n){
+  const el=document.getElementById(id);
+  if(!el)return;
+  el.textContent=n||'';
+  el.style.display=n?'':'none';
+}
+
+// ═══════════════════════════════════════════════
+//  SITES
+// ═══════════════════════════════════════════════
+function renderSites(){
+  const q=(document.getElementById('q-sites')?.value||'').toLowerCase();
+  const fr=document.getElementById('fs-region')?.value||'';
+  const fs=document.getElementById('fs-status')?.value||'';
+  const ft=document.getElementById('fs-type')?.value||'';
+  const list=DB.sites.filter(s=>
+    (!q||(s.name+s.owner+s.phone+s.notes).toLowerCase().includes(q))&&
+    (!fr||s.region===fr)&&(!fs||s.status===fs)&&(!ft||s.type===ft));
+  const cntEl=document.getElementById('sites-count');
+  if(cntEl)cntEl.textContent=`${list.length} / ${DB.sites.length}`;
+  const tbody=document.getElementById('sites-tbody');
+  if(!tbody)return;
+  tbody.innerHTML=list.map((s,i)=>`
+    <tr>
+      <td class="td-mono td-dim">${String(i+1).padStart(2,'0')}</td>
+      <td>
+        <div style="font-weight:600">${s.name}</div>
+        ${s.notes?`<div class="td-dim" style="font-size:11px;margin-top:2px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.notes}</div>`:''}
+      </td>
+      <td class="hide-m">${rb(s.region)}</td>
+      <td class="hide-m"><span class="badge ${s.type==='نقطة رئيسية'?'b-cyan':'b-blue'}">${s.type}</span></td>
+      <td class="hide-m td-dim">${s.owner}</td>
+      <td class="td-mono" style="color:var(--cyan);font-size:12px">${s.phone}</td>
+      <td>${sb(s.status)}</td>
+      <td class="hide-m td-dim" style="font-size:11px">${s.updated}</td>
+      <td><div class="td-acts">
+        <button class="btn btn-ghost btn-xs" onclick="editSite(${s.id})">✏️</button>
+        <button class="btn-del" onclick="delSite(${s.id})">🗑</button>
+      </div></td>
+    </tr>`).join('')||`<tr><td colspan="9"><div class="empty-state"><span class="empty-ico">🔍</span><div class="empty-txt">لا توجد نتائج</div></div></td></tr>`;
+}
+
+function editSite(id){
+  const s=DB.sites.find(x=>x.id===id);
+  document.getElementById('es-id').value=id;
+  document.getElementById('m-site-title').textContent='تعديل الموقع';
+  document.getElementById('s-name').value=s.name;
+  document.getElementById('s-owner').value=s.owner;
+  document.getElementById('s-phone').value=s.phone;
+  document.getElementById('s-notes').value=s.notes;
+  document.getElementById('s-coords').value=s.coords||'';
+  setSel('s-region',s.region);setSel('s-type',s.type);setSel('s-status',s.status);
+  openModal('m-site');
+}
+function saveSite(){
+  const eid=document.getElementById('es-id').value;
+  const name=document.getElementById('s-name').value.trim();
+  if(!name){toast('يرجى إدخال اسم الموقع','error');return;}
+  const d={name,region:g('s-region'),type:g('s-type'),owner:v('s-owner')||'–',
+    phone:v('s-phone')||'–',status:g('s-status'),coords:v('s-coords'),
+    notes:v('s-notes'),updated:today()};
+  if(eid){Object.assign(DB.sites.find(s=>s.id==eid),d);log('info','تعديل موقع',name);}
+  else{DB.sites.push({id:DB._id.site++,...d});log('success','إضافة موقع',name);}
+  save();closeModal('m-site');resetModal('m-site');renderAll();
+  toast(eid?'تم تعديل الموقع':'تم إضافة الموقع');
+}
+function delSite(id){
+  const s=DB.sites.find(x=>x.id===id);
+  if(!confirm(`حذف "${s.name}"؟`))return;
+  DB.sites=DB.sites.filter(x=>x.id!==id);
+  log('warn','حذف موقع',s.name);save();renderAll();toast('تم الحذف','warn');
+}
+
+// ═══════════════════════════════════════════════
+//  DEVICES
+// ═══════════════════════════════════════════════
+function renderDevices(){
+  const q=(document.getElementById('q-dev')?.value||'').toLowerCase();
+  const ft=document.getElementById('fd-type')?.value||'';
+  const fs=document.getElementById('fd-status')?.value||'';
+  const list=DB.devices.filter(d=>
+    (!q||(d.name+d.spec+d.site).toLowerCase().includes(q))&&
+    (!ft||d.type===ft)&&(!fs||d.status===fs));
+  const cntEl=document.getElementById('dev-count');
+  if(cntEl)cntEl.textContent=`${list.length} / ${DB.devices.length}`;
+  const tbody=document.getElementById('dev-tbody');
+  if(!tbody)return;
+  tbody.innerHTML=list.map((d,i)=>`
+    <tr>
+      <td class="td-mono td-dim">${String(i+1).padStart(2,'0')}</td>
+      <td>
+        <div style="font-weight:600">${d.name}</div>
+        ${d.notes?`<div class="td-dim" style="font-size:11px;margin-top:2px">${d.notes}</div>`:''}
+      </td>
+      <td>${tb(d.type)}</td>
+      <td class="hide-m td-dim">${d.spec}</td>
+      <td class="hide-m td-dim">${d.site}</td>
+      <td class="td-mono" style="color:var(--cyan);font-weight:700;font-size:15px">${d.qty}</td>
+      <td>${sb(d.status)}</td>
+      <td><div class="td-acts">
+        <button class="btn btn-ghost btn-xs" onclick="editDev(${d.id})">✏️</button>
+        <button class="btn-del" onclick="delDev(${d.id})">🗑</button>
+      </div></td>
+    </tr>`).join('')||`<tr><td colspan="8"><div class="empty-state"><span class="empty-ico">🔍</span><div class="empty-txt">لا توجد نتائج</div></div></td></tr>`;
+}
+function editDev(id){
+  const d=DB.devices.find(x=>x.id===id);
+  document.getElementById('ed-id').value=id;
+  document.getElementById('m-dev-title').textContent='تعديل الجهاز';
+  document.getElementById('d-name').value=d.name;
+  document.getElementById('d-spec').value=d.spec;
+  document.getElementById('d-qty').value=d.qty;
+  document.getElementById('d-site').value=d.site;
+  document.getElementById('d-notes').value=d.notes;
+  document.getElementById('d-date').value=d.date||'';
+  document.getElementById('d-cost').value=d.cost||0;
+  setSel('d-type',d.type);setSel('d-status',d.status);
+  openModal('m-device');
+}
+function saveDevice(){
+  const eid=document.getElementById('ed-id').value;
+  const name=document.getElementById('d-name').value.trim();
+  if(!name){toast('يرجى إدخال اسم الجهاز','error');return;}
+  const d={name,type:g('d-type'),spec:v('d-spec')||'–',qty:parseInt(v('d-qty'))||1,
+    site:v('d-site')||'–',status:g('d-status'),notes:v('d-notes'),
+    date:v('d-date'),cost:Number(v('d-cost'))||0};
+  if(eid){Object.assign(DB.devices.find(x=>x.id==eid),d);log('info','تعديل جهاز',name);}
+  else{DB.devices.push({id:DB._id.dev++,...d});log('success','إضافة جهاز',name);}
+  save();closeModal('m-device');resetModal('m-device');renderAll();
+  toast(eid?'تم تعديل الجهاز':'تم إضافة الجهاز');
+}
+function delDev(id){
+  if(!confirm('حذف هذا الجهاز؟'))return;
+  const d=DB.devices.find(x=>x.id===id);
+  DB.devices=DB.devices.filter(x=>x.id!==id);
+  log('warn','حذف جهاز',d.name);save();renderAll();toast('تم الحذف','warn');
+}
+
+// ═══════════════════════════════════════════════
+//  NETWORK MAP
+// ═══════════════════════════════════════════════
+function renderMap(){
+  const svg=document.getElementById('net-svg');
+  if(!svg)return;
+  const W=svg.clientWidth||800,H=svg.clientHeight||480;
+  const ns='http://www.w3.org/2000/svg';
+  svg.innerHTML='';
+
+  const nodes=[
+    {id:'inet',label:'الإنترنت',x:.5,y:.08,r:20,c:'var(--cyan)',type:'internet'},
+    {id:'n1',label:'شاكر دماج',x:.12,y:.25,r:14,c:'var(--red)',type:'main'},
+    {id:'n2',label:'فيصل دماج',x:.28,y:.25,r:14,c:'var(--red)',type:'main'},
+    {id:'n3',label:'بقالة الامتياز',x:.44,y:.25,r:14,c:'var(--red)',type:'main'},
+    {id:'n4',label:'قيس دماج',x:.60,y:.25,r:14,c:'var(--red)',type:'main'},
+    {id:'n5',label:'حارة بشير',x:.76,y:.25,r:14,c:'var(--red)',type:'main'},
+    {id:'m1',label:'جميل كرامي',x:.88,y:.38,r:13,c:'var(--amber)',type:'main-m'},
+    {id:'m2',label:'عبده العبادي',x:.76,y:.38,r:13,c:'var(--amber)',type:'main-m'},
+    {id:'m3',label:'حمدي الشريف',x:.64,y:.38,r:13,c:'var(--amber)',type:'main-m'},
+    {id:'m4',label:'أخو مروان',x:.52,y:.38,r:13,c:'var(--amber)',type:'main-m'},
+    {id:'s1',label:'صلاح النقيب',x:.05,y:.55,r:8,c:'var(--green)',type:'sub'},
+    {id:'s2',label:'ياسر الشرجي',x:.13,y:.55,r:8,c:'var(--green)',type:'sub'},
+    {id:'s3',label:'التممي',x:.21,y:.55,r:8,c:'var(--amber)',type:'sub'},
+    {id:'s4',label:'العرش',x:.29,y:.55,r:8,c:'var(--amber)',type:'sub'},
+    {id:'s5',label:'هارون',x:.37,y:.55,r:8,c:'var(--green)',type:'sub'},
+    {id:'s6',label:'العدهي',x:.45,y:.55,r:8,c:'var(--green)',type:'sub'},
+    {id:'s7',label:'المبروك ألم.',x:.53,y:.55,r:8,c:'var(--green)',type:'sub'},
+    {id:'s8',label:'المبروك حديد',x:.61,y:.55,r:8,c:'var(--green)',type:'sub'},
+    {id:'sa1',label:'صادق شملان',x:.69,y:.55,r:8,c:'var(--green)',type:'sub'},
+    {id:'sa2',label:'زياد مهدي',x:.77,y:.55,r:8,c:'var(--green)',type:'sub'},
+    {id:'sa3',label:'نصر الحلاق',x:.85,y:.55,r:8,c:'var(--green)',type:'sub'},
+    {id:'sa4',label:'يوسف دحان',x:.93,y:.55,r:8,c:'var(--green)',type:'sub'},
+    {id:'mf1',label:'وليد العماقي',x:.82,y:.7,r:7,c:'var(--teal)',type:'sub-m'},
+    {id:'mf2',label:'طلال العطار',x:.88,y:.7,r:7,c:'var(--teal)',type:'sub-m'},
+    {id:'mf3',label:'طه مرعه',x:.94,y:.7,r:7,c:'var(--teal)',type:'sub-m'},
+    {id:'sw1',label:'فوق المحلايات',x:.37,y:.7,r:7,c:'var(--purple)',type:'sub-s'},
+    {id:'sw2',label:'عمران المفتي',x:.44,y:.7,r:7,c:'var(--purple)',type:'sub-s'},
+    {id:'sw3',label:'فوق المستوصف',x:.51,y:.7,r:7,c:'var(--purple)',type:'sub-s'},
+  ];
+
+  const links=[
+    ['inet','n1'],['inet','n2'],['inet','n3'],['inet','n4'],['inet','n5'],
+    ['inet','m1'],['inet','m2'],['inet','m3'],['inet','m4'],
+    ['n1','s1'],['n2','s2'],['n2','s3'],['n3','s4'],['n3','s5'],['n3','s6'],
+    ['n3','s7'],['n3','s8'],['n4','sa1'],['n4','sa2'],['n4','sa3'],['n4','sa4'],
+    ['n4','sw1'],['n4','sw2'],['n4','sw3'],
+    ['m1','mf1'],['m2','mf2'],['m3','mf3'],
+  ];
+
+  const lg=document.createElementNS(ns,'g');
+  links.forEach(([a,b])=>{
+    const na=nodes.find(n=>n.id===a),nb=nodes.find(n=>n.id===b);
+    if(!na||!nb)return;
+    const l=document.createElementNS(ns,'line');
+    l.setAttribute('x1',na.x*W);l.setAttribute('y1',na.y*H);
+    l.setAttribute('x2',nb.x*W);l.setAttribute('y2',nb.y*H);
+    const isMain=['main','main-m','internet'].includes(na.type)&&['main','main-m'].includes(nb.type);
+    l.setAttribute('stroke',isMain?'rgba(0,212,255,.25)':'rgba(0,230,118,.15)');
+    l.setAttribute('stroke-width',isMain?'1.5':'1');
+    if(!isMain)l.setAttribute('stroke-dasharray','4,3');
+    lg.appendChild(l);
+  });
+  svg.appendChild(lg);
+
+  nodes.forEach(n=>{
+    const grp=document.createElementNS(ns,'g');
+    grp.style.cursor='pointer';
+
+    if(n.type!=='sub'&&n.type!=='sub-m'&&n.type!=='sub-s'){
+      const ring=document.createElementNS(ns,'circle');
+      ring.setAttribute('cx',n.x*W);ring.setAttribute('cy',n.y*H);
+      ring.setAttribute('r',n.r+7);ring.setAttribute('fill','none');
+      ring.setAttribute('stroke',n.c);ring.setAttribute('stroke-width','1');
+      ring.setAttribute('opacity','.2');
+      ring.style.animation=`pulse ${1.5+Math.random()}s ease-in-out infinite`;
+      grp.appendChild(ring);
+    }
+
+    const c=document.createElementNS(ns,'circle');
+    c.setAttribute('cx',n.x*W);c.setAttribute('cy',n.y*H);c.setAttribute('r',n.r);
+    c.setAttribute('fill',n.type==='internet'?'rgba(0,212,255,.15)':'rgba(13,20,36,.8)');
+    c.setAttribute('stroke',n.c);c.setAttribute('stroke-width','1.5');
+    grp.appendChild(c);
+
+    const t=document.createElementNS(ns,'text');
+    t.setAttribute('x',n.x*W);t.setAttribute('y',n.y*H+n.r+12);
+    t.setAttribute('text-anchor','middle');t.setAttribute('fill',n.c);
+    t.setAttribute('font-size','9');t.setAttribute('font-family','IBM Plex Sans Arabic');
+    t.setAttribute('font-weight','600');t.setAttribute('opacity','.8');
+    t.textContent=n.label.length>8?n.label.slice(0,7)+'…':n.label;
+    grp.appendChild(t);
+
+    svg.appendChild(grp);
+  });
+}
+
+// ═══════════════════════════════════════════════
+//  FAULTS
+// ═══════════════════════════════════════════════
+function renderFaults(){
+  const fs=document.getElementById('ff-status')?.value||'';
+  const fr=document.getElementById('ff-region')?.value||'';
+  const fp=document.getElementById('ff-pri')?.value||'';
+  const list=DB.faults.filter(f=>(!fs||f.status===fs)&&(!fr||f.region===fr)&&(!fp||f.priority===fp));
+  const open=DB.faults.filter(f=>f.status==='مفتوح').length;
+  const cntEl=document.getElementById('fault-count');
+  if(cntEl)cntEl.textContent=`${open} مفتوح`;
+  const listEl=document.getElementById('fault-list');
+  if(!listEl)return;
+  if(!list.length){
+    listEl.innerHTML=`<div class="empty-state"><span class="empty-ico">🎉</span><div class="empty-txt">لا توجد أعطال – الشبكة تعمل بشكل مثالي</div></div>`;
+    return;
+  }
+  const scls={مفتوح:'open','قيد المعالجة':'prog',مغلق:'done'};
+  const sico={مفتوح:'🔴','قيد المعالجة':'🟡',مغلق:'✅'};
+  listEl.innerHTML=list.map(f=>`
+    <div class="fc ${scls[f.status]||'open'}">
+      <div class="fc-ico ${scls[f.status]||'open'}">${sico[f.status]||'🔴'}</div>
+      <div class="fc-body">
+        <div class="fc-head">
+          <span class="fc-title">${f.site}</span>
+          ${rb(f.region)} ${pri(f.priority)}
+          ${f.assigned&&f.assigned!=='–'?`<span class="badge b-blue">👤 ${f.assigned}</span>`:''}
+        </div>
+        <div class="fc-meta">${f.type} · ${f.date}${f.phone&&f.phone!=='–'?' · 📞 '+f.phone:''}</div>
+        <div class="fc-desc">${f.desc}</div>
+        <div class="fc-acts">
+          ${f.status==='مفتوح'?`<button class="btn btn-amber btn-sm" onclick="updFault(${f.id},'قيد المعالجة')">⚙️ بدء المعالجة</button>`:''}
+          ${f.status!=='مغلق'?`<button class="btn btn-green btn-sm" onclick="updFault(${f.id},'مغلق')">✅ إغلاق</button>`:''}
+          <button class="btn btn-ghost btn-sm" onclick="delFault(${f.id})">🗑</button>
+        </div>
+      </div>
+      <div>${sb(f.status)}</div>
+    </div>`).join('');
+}
+function saveFault(){
+  const site=v('f-site'),desc=v('f-desc');
+  if(!site||!desc){toast('يرجى ملء الحقول المطلوبة','error');return;}
+  const f={id:DB._id.fault++,site,region:g('f-region'),type:g('f-type'),
+    priority:g('f-pri'),desc,phone:v('f-phone')||'–',assigned:v('f-assigned')||'–',
+    status:'مفتوح',date:today()};
+  DB.faults.unshift(f);
+  log('danger','عطل جديد',`${site}: ${desc}`);
+  save();closeModal('m-fault');resetModal('m-fault');renderAll();toast('تم تسجيل العطل');
+}
+function updFault(id,status){
+  const f=DB.faults.find(x=>x.id===id);f.status=status;
+  log('info','تحديث عطل',`${f.site} → ${status}`);
+  save();renderAll();toast(`تم التحديث: ${status}`);
+}
+function delFault(id){
+  if(!confirm('حذف هذا العطل؟'))return;
+  const f=DB.faults.find(x=>x.id===id);
+  DB.faults=DB.faults.filter(x=>x.id!==id);
+  log('warn','حذف عطل',f.site);save();renderAll();toast('تم الحذف','warn');
+}
+
+// ═══════════════════════════════════════════════
+//  TASKS
+// ═══════════════════════════════════════════════
+function renderTasks(){
+  const fs=document.getElementById('ft-status')?.value||'';
+  const fp=document.getElementById('ft-pri')?.value||'';
+  let list=DB.tasks.filter(t=>
+    (!fs||(fs==='مفتوحة'?!t.done:t.done))&&
+    (!fp||t.priority===fp));
+  const open=DB.tasks.filter(t=>!t.done).length;
+  const cntEl=document.getElementById('task-count');
+  if(cntEl)cntEl.textContent=`${open} معلقة`;
+  const listEl=document.getElementById('task-list');
+  if(!listEl)return;
+  listEl.innerHTML=list.map(t=>`
+    <div class="task-item ${t.done?'done-item':''}">
+      <div class="task-check ${t.done?'checked':''}" onclick="toggleTask(${t.id})">${t.done?'✓':''}</div>
+      <div class="task-body">
+        <div class="task-title">${t.title}</div>
+        <div class="task-meta">
+          <span class="task-pri ${t.priority==='عالية'?'high':t.priority==='متوسطة'?'med':'low'}">${t.priority}</span>
+          ${t.site?`<span style="color:var(--txt3)">📍 ${t.site}</span>`:''}
+          ${t.due?`<span style="color:var(--txt3)">📅 ${t.due}</span>`:''}
+          ${t.assigned?`<span style="color:var(--txt3)">👤 ${t.assigned}</span>`:''}
+        </div>
+        ${t.notes?`<div style="font-size:11px;color:var(--txt3);margin-top:4px">${t.notes}</div>`:''}
+      </div>
+      <button class="btn-del" style="flex-shrink:0" onclick="delTask(${t.id})">🗑</button>
+    </div>`).join('')||`<div class="empty-state"><span class="empty-ico">✅</span><div class="empty-txt">كل المهام مكتملة!</div></div>`;
+}
+function toggleTask(id){
+  const t=DB.tasks.find(x=>x.id===id);t.done=!t.done;
+  if(t.done)log('success','مهمة مكتملة',t.title);
+  save();renderAll();toast(t.done?'تم إكمال المهمة 🎉':'تم إعادة فتح المهمة');
+}
+function saveTask(){
+  const title=v('t-title');
+  if(!title){toast('يرجى إدخال عنوان المهمة','error');return;}
+  DB.tasks.unshift({id:DB._id.task++,title,priority:g('t-pri'),
+    site:v('t-site'),due:v('t-due'),assigned:v('t-assigned'),notes:v('t-notes'),done:false});
+  log('info','مهمة جديدة',title);
+  save();closeModal('m-task');resetModal('m-task');renderAll();toast('تمت إضافة المهمة');
+}
+function delTask(id){
+  if(!confirm('حذف هذه المهمة؟'))return;
+  DB.tasks=DB.tasks.filter(x=>x.id!==id);
+  save();renderAll();toast('تم الحذف','warn');
+}
+
+// ═══════════════════════════════════════════════
+//  MAINTENANCE
+// ═══════════════════════════════════════════════
+function renderMaintenance(){
+  const up=document.getElementById('maint-upcoming');
+  if(!up)return;
+  const upcoming=DB.maintenance.filter(m=>!m.done).sort((a,b)=>a.date.localeCompare(b.date));
+  up.innerHTML=upcoming.length?
+    upcoming.map(m=>{
+      const d=new Date(m.date);
+      return`<div class="maint-card">
+        <div class="maint-date">
+          <div class="maint-day">${d.getDate()}</div>
+          <div class="maint-month">${d.toLocaleDateString('ar',{month:'short'})}</div>
+        </div>
+        <div class="maint-body">
+          <div class="maint-title">${m.type}</div>
+          <div class="maint-site">${m.site}</div>
+          ${m.notes?`<div style="font-size:11px;color:var(--txt3);margin-top:4px">${m.notes}</div>`:''}
+        </div>
+        <div style="display:flex;gap:6px;flex-direction:column">
+          <button class="btn btn-green btn-xs" onclick="doneMaint(${m.id})">✅</button>
+          <button class="btn btn-ghost btn-xs" onclick="delMaint(${m.id})">🗑</button>
+        </div>
+      </div>`;
+    }).join(''):`<div style="text-align:center;padding:30px;color:var(--txt3);font-size:13px">لا توجد صيانة مجدولة</div>`;
+
+  const done=DB.maintenance.filter(m=>m.done).slice(0,5);
+  document.getElementById('maint-log').innerHTML=done.length?
+    `<div class="tl">${done.map(m=>`
+      <div class="tl-item">
+        <div class="tl-dot-wrap">
+          <div class="tl-dot" style="background:var(--green)"></div>
+          <div class="tl-line"></div>
+        </div>
+        <div class="tl-body">
+          <div class="tl-title">${m.type} – ${m.site}</div>
+          <div class="tl-time">${m.date}</div>
+          ${m.notes?`<div class="tl-desc">${m.notes}</div>`:''}
+        </div>
+      </div>`).join('')}</div>`:`<div style="text-align:center;padding:20px;color:var(--txt3);font-size:13px">لا يوجد سجل صيانة بعد</div>`;
+}
+function saveMaint(){
+  const site=v('mt-site'),date=v('mt-date');
+  if(!site){toast('يرجى إدخال الموقع','error');return;}
+  DB.maintenance.push({id:DB._id.maint++,site,type:g('mt-type'),date:date||today(),notes:v('mt-notes'),done:false});
+  log('info','جدولة صيانة',`${site} – ${g('mt-type')}`);
+  save();closeModal('m-maint');resetModal('m-maint');renderAll();toast('تمت جدولة الصيانة');
+}
+function doneMaint(id){
+  const m=DB.maintenance.find(x=>x.id===id);m.done=true;
+  log('success','صيانة مكتملة',m.site);save();renderAll();toast('تمت الصيانة ✅');
+}
+function delMaint(id){
+  DB.maintenance=DB.maintenance.filter(x=>x.id!==id);
+  save();renderAll();toast('تم الحذف','warn');
+}
+
+// ═══════════════════════════════════════════════
+//  SUBSCRIBERS
+// ═══════════════════════════════════════════════
+function renderSubs(){
+  const q=(document.getElementById('q-subs')?.value||'').toLowerCase();
+  const fr=document.getElementById('fsub-region')?.value||'';
+  const fs=document.getElementById('fsub-status')?.value||'';
+  const list=DB.subscribers.filter(s=>(!q||(s.name+s.phone).toLowerCase().includes(q))&&(!fr||s.region===fr)&&(!fs||s.status===fs));
+  const cntEl=document.getElementById('subs-count');
+  if(cntEl)cntEl.textContent=`${DB.subscribers.length}`;
+  const emp=document.getElementById('subs-empty');
+  const tb=document.getElementById('subs-tbody');
+  if(!tb)return;
+  if(!DB.subscribers.length){emp.style.display='block';tb.innerHTML='';return;}
+  emp.style.display='none';
+  const NOW=new Date();
+  tb.innerHTML=list.map((s,i)=>{
+    let ec='',ed=s.expiry||'–';
+    if(s.expiry){const diff=(new Date(s.expiry)-NOW)/86400000;
+      if(diff<0){ec='exp-bad';ed='منتهي';}
+      else if(diff<7){ec='exp-soon';ed=`${Math.ceil(diff)} أيام`;}
+    }
+    return`<tr>
+      <td class="td-mono td-dim">${String(i+1).padStart(2,'0')}</td>
+      <td style="font-weight:600">${s.name}</td>
+      <td class="td-mono" style="color:var(--cyan);font-size:12px">${s.phone}</td>
+      <td class="hide-m">${rb(s.region)}</td>
+      <td class="hide-m td-dim">${s.plan}</td>
+      <td class="${ec}" style="font-size:12px;font-weight:600">${ed}</td>
+      <td class="hide-m" style="color:var(--green);font-weight:700;font-family:var(--mono)">${s.amount?s.amount+' ر':'–'}</td>
+      <td>${sb(s.status)}</td>
+      <td><div class="td-acts">
+        <button class="btn btn-ghost btn-xs" onclick="renewSub(${s.id})" title="تجديد">🔄</button>
+        <button class="btn btn-ghost btn-xs" onclick="editSub(${s.id})">✏️</button>
+        <button class="btn-del" onclick="delSub(${s.id})">🗑</button>
+      </div></td>
+    </tr>`;}).join('')||`<tr><td colspan="9"><div class="empty-state"><span class="empty-ico">🔍</span><div class="empty-txt">لا توجد نتائج</div></div></td></tr>`;
+}
+function editSub(id){
+  const s=DB.subscribers.find(x=>x.id===id);
+  document.getElementById('esub-id').value=id;
+  document.getElementById('m-sub-title').textContent='تعديل المشترك';
+  document.getElementById('sub-name').value=s.name;
+  document.getElementById('sub-phone').value=s.phone;
+  document.getElementById('sub-expiry').value=s.expiry||'';
+  document.getElementById('sub-amount').value=s.amount||'';
+  document.getElementById('sub-notes').value=s.notes||'';
+  setSel('sub-region',s.region);setSel('sub-plan',s.plan);
+  openModal('m-sub');
+}
+function saveSub(){
+  const eid=document.getElementById('esub-id').value;
+  const name=v('sub-name'),phone=v('sub-phone');
+  if(!name||!phone){toast('يرجى إدخال الاسم والجوال','error');return;}
+  const exp=v('sub-expiry');
+  let status='نشط';
+  if(exp&&new Date(exp)<new Date())status='منتهي';
+  const d={name,phone,region:g('sub-region'),plan:g('sub-plan'),expiry:exp,
+    amount:v('sub-amount'),notes:v('sub-notes'),status};
+  if(eid){Object.assign(DB.subscribers.find(s=>s.id==eid),d);log('info','تعديل مشترك',name);}
+  else{DB.subscribers.push({id:DB._id.sub++,...d});log('success','مشترك جديد',name);}
+  save();closeModal('m-sub');resetModal('m-sub');renderAll();toast(eid?'تم التعديل':'تمت الإضافة');
+}
+function renewSub(id){
+  const s=DB.subscribers.find(x=>x.id===id);
+  const d=new Date();d.setMonth(d.getMonth()+1);
+  s.expiry=d.toISOString().split('T')[0];s.status='نشط';
+  log('success','تجديد اشتراك',s.name);save();renderAll();toast(`تم تجديد اشتراك ${s.name} 🎉`);
+}
+function delSub(id){
+  const s=DB.subscribers.find(x=>x.id===id);
+  if(!confirm(`حذف ${s.name}؟`))return;
+  DB.subscribers=DB.subscribers.filter(x=>x.id!==id);
+  log('warn','حذف مشترك',s.name);save();renderAll();toast('تم الحذف','warn');
+}
+
+// ═══════════════════════════════════════════════
+//  FINANCE
+// ═══════════════════════════════════════════════
+function renderFinance(){
+  const finKpi=document.getElementById('fin-kpi');
+  if(!finKpi)return;
+  const inc=DB.finance.filter(f=>f.type==='إيراد').reduce((a,f)=>a+Number(f.amount||0),0);
+  const exp2=DB.finance.filter(f=>f.type==='مصروف').reduce((a,f)=>a+Number(f.amount||0),0);
+  const net=inc-exp2;
+
+  finKpi.innerHTML=[
+    {ico:'💰',num:inc,lbl:'إجمالي الإيرادات',c:'var(--green)'},
+    {ico:'💸',num:exp2,lbl:'إجمالي المصروفات',c:'var(--red)'},
+    {ico:'📊',num:Math.abs(net),lbl:net>=0?'صافي الربح':'صافي الخسارة',c:net>=0?'var(--cyan)':'var(--amber)'},
+    {ico:'📋',num:DB.finance.length,lbl:'إجمالي المعاملات',c:'var(--purple)'},
+  ].map(k=>`
+    <div class="kpi" style="--kc:${k.c}">
+      <div class="kpi-glow"></div>
+      <div class="kpi-ico">${k.ico}</div>
+      <div class="kpi-num">${k.num.toLocaleString('ar')}</div>
+      <div class="kpi-lbl">${k.lbl} (ر)</div>
+      <div class="kpi-bar"></div>
+    </div>`).join('');
+
+  const incItems=DB.finance.filter(f=>f.type==='إيراد');
+  const cats=['اشتراكات مشتركين','أجهزة','صيانة','نقل','أخرى'];
+  const incByCat=cats.map(c=>({lbl:c,n:incItems.filter(f=>f.category===c).reduce((a,f)=>a+Number(f.amount||0),0)})).filter(x=>x.n>0);
+  const mxI=Math.max(...incByCat.map(x=>x.n),1);
+  document.getElementById('fin-rev-chart').innerHTML=incByCat.length?
+    incByCat.map((r,i)=>{const cs=['var(--green)','var(--cyan)','var(--blue)','var(--purple)','var(--teal)'];
+      return`<div class="bc-row"><div class="bc-lbl">${r.lbl}</div>
+        <div class="bc-track"><div class="bc-fill" style="width:${r.n/mxI*100}%;background:${cs[i%cs.length]}"></div></div>
+        <div class="bc-val" style="color:${cs[i%cs.length]}">${r.n}</div></div>`;}).join(''):
+    '<div style="text-align:center;padding:20px;color:var(--txt3);font-size:12px">لا توجد إيرادات بعد</div>';
+
+  const expItems=DB.finance.filter(f=>f.type==='مصروف');
+  const expByCat=cats.map(c=>({lbl:c,n:expItems.filter(f=>f.category===c).reduce((a,f)=>a+Number(f.amount||0),0)})).filter(x=>x.n>0);
+  const mxE=Math.max(...expByCat.map(x=>x.n),1);
+  document.getElementById('fin-exp-chart').innerHTML=expByCat.length?
+    expByCat.map((r,i)=>{const cs=['var(--red)','var(--amber)','#ff8c42','var(--purple)','var(--blue)'];
+      return`<div class="bc-row"><div class="bc-lbl">${r.lbl}</div>
+        <div class="bc-track"><div class="bc-fill" style="width:${r.n/mxE*100}%;background:${cs[i%cs.length]}"></div></div>
+        <div class="bc-val" style="color:${cs[i%cs.length]}">${r.n}</div></div>`;}).join(''):
+    '<div style="text-align:center;padding:20px;color:var(--txt3);font-size:12px">لا توجد مصروفات بعد</div>';
+
+  const emp=document.getElementById('fin-empty');
+  const tb=document.getElementById('fin-tbody');
+  if(!DB.finance.length){emp.style.display='block';tb.innerHTML='';return;}
+  emp.style.display='none';
+  tb.innerHTML=[...DB.finance].reverse().map((f,i)=>`
+    <tr>
+      <td class="td-mono td-dim">${String(i+1).padStart(2,'0')}</td>
+      <td style="font-weight:600">${f.desc}</td>
+      <td><span class="badge ${f.type==='إيراد'?'b-green':'b-red'}">${f.type}</span></td>
+      <td class="hide-m td-dim">${f.date}</td>
+      <td class="td-mono" style="color:${f.type==='إيراد'?'var(--green)':'var(--red)'};font-weight:700">
+        ${f.type==='إيراد'?'+':'–'}${Number(f.amount||0).toLocaleString('ar')} ر
+      </td>
+      <td class="td-dim" style="font-size:11px">${f.notes||'–'}</td>
+      <td><button class="btn-del" onclick="delExp(${f.id})">🗑</button></td>
+    </tr>`).join('');
+}
+function saveExpense(){
+  const desc=v('exp-desc'),amount=v('exp-amount');
+  if(!desc||!amount){toast('يرجى ملء الحقول المطلوبة','error');return;}
+  const f={id:DB._id.exp++,desc,type:g('exp-type'),amount:Number(amount),
+    date:v('exp-date')||today(),category:g('exp-cat'),notes:v('exp-notes')};
+  DB.finance.push(f);
+  log(f.type==='إيراد'?'success':'info',f.type,`${desc}: ${amount} ريال`);
+  save();closeModal('m-expense');resetModal('m-expense');renderAll();toast('تمت إضافة المعاملة');
+}
+function delExp(id){
+  if(!confirm('حذف هذه المعاملة؟'))return;
+  DB.finance=DB.finance.filter(x=>x.id!==id);
+  save();renderAll();toast('تم الحذف','warn');
+}
+
+// ═══════════════════════════════════════════════
+//  REPORTS
+// ═══════════════════════════════════════════════
+function genReport(type){
+  const titles={sites:'تقرير المواقع',devices:'تقرير الأجهزة',faults:'تقرير الأعطال',
+    subscribers:'تقرير المشتركين',finance:'التقرير المالي',full:'التقرير الشامل'};
+  document.getElementById('report-title').textContent=`${titles[type]} – ${new Date().toLocaleDateString('ar')}`;
+  let html='';
+  if(type==='sites'||type==='full'){
+    html+=`<h4 style="margin:14px 0 8px;color:var(--cyan)">المواقع (${DB.sites.length})</h4>`;
+    html+=`<table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead><tr style="color:var(--txt3)"><th style="text-align:right;padding:6px">الموقع</th><th>المنطقة</th><th>الحالة</th><th>الجوال</th></tr></thead><tbody>`;
+    html+=DB.sites.map(s=>`<tr style="border-bottom:1px solid var(--bdr)">
+      <td style="padding:6px">${s.name}</td><td>${s.region}</td><td>${s.status}</td><td style="direction:ltr">${s.phone}</td></tr>`).join('');
+    html+='</tbody></table>';
+  }
+  if(type==='devices'||type==='full'){
+    html+=`<h4 style="margin:14px 0 8px;color:var(--purple)">الأجهزة – إجمالي: ${DB.devices.reduce((a,d)=>a+d.qty,0)} وحدة</h4>`;
+    html+=`<table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead><tr style="color:var(--txt3)"><th style="text-align:right;padding:6px">الجهاز</th><th>النوع</th><th>الكمية</th><th>الحالة</th></tr></thead><tbody>`;
+    html+=DB.devices.map(d=>`<tr style="border-bottom:1px solid var(--bdr)">
+      <td style="padding:6px">${d.name}</td><td>${d.type}</td><td style="font-weight:700;color:var(--cyan)">${d.qty}</td><td>${d.status}</td></tr>`).join('');
+    html+='</tbody></table>';
+  }
+  if(type==='faults'||type==='full'){
+    html+=`<h4 style="margin:14px 0 8px;color:var(--red)">الأعطال (${DB.faults.length})</h4>`;
+    html+=DB.faults.map(f=>`<div style="padding:8px;border:1px solid var(--bdr);border-radius:8px;margin-bottom:6px;font-size:12px">
+      <strong>${f.site}</strong> – ${f.type} – <span style="color:${f.status==='مغلق'?'var(--green)':f.status==='مفتوح'?'var(--red)':'var(--amber)'}">${f.status}</span>
+      <div style="color:var(--txt2);margin-top:4px">${f.desc}</div></div>`).join('');
+  }
+  if(type==='subscribers'||type==='full'){
+    html+=`<h4 style="margin:14px 0 8px;color:var(--teal)">المشتركون (${DB.subscribers.length})</h4>`;
+    if(DB.subscribers.length){
+      html+=`<table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead><tr style="color:var(--txt3)"><th style="text-align:right;padding:6px">الاسم</th><th>الجوال</th><th>الباقة</th><th>الانتهاء</th><th>المبلغ</th></tr></thead><tbody>`;
+      html+=DB.subscribers.map(s=>`<tr style="border-bottom:1px solid var(--bdr)">
+        <td style="padding:6px">${s.name}</td><td style="direction:ltr">${s.phone}</td>
+        <td>${s.plan}</td><td>${s.expiry||'–'}</td><td>${s.amount?s.amount+' ر':'–'}</td></tr>`).join('');
+      html+='</tbody></table>';
+    }else html+='<div style="color:var(--txt3);font-size:12px">لا يوجد مشتركون</div>';
+  }
+  if(type==='finance'||type==='full'){
+    const inc=DB.finance.filter(f=>f.type==='إيراد').reduce((a,f)=>a+Number(f.amount||0),0);
+    const exp2=DB.finance.filter(f=>f.type==='مصروف').reduce((a,f)=>a+Number(f.amount||0),0);
+    html+=`<h4 style="margin:14px 0 8px;color:var(--green)">الملخص المالي</h4>`;
+    html+=`<div style="display:flex;gap:12px;flex-wrap:wrap;font-size:13px">
+      <div style="padding:10px 16px;background:var(--green-dim);border-radius:8px;color:var(--green)">إيرادات: ${inc.toLocaleString('ar')} ر</div>
+      <div style="padding:10px 16px;background:var(--red-dim);border-radius:8px;color:var(--red)">مصروفات: ${exp2.toLocaleString('ar')} ر</div>
+      <div style="padding:10px 16px;background:var(--cyan-dim);border-radius:8px;color:var(--cyan)">الصافي: ${(inc-exp2).toLocaleString('ar')} ر</div>
+    </div>`;
+  }
+  document.getElementById('report-body').innerHTML=html||'<div style="color:var(--txt3)">لا توجد بيانات</div>';
+  document.getElementById('report-output').style.display='block';
+  document.getElementById('report-output').scrollIntoView({behavior:'smooth'});
+}
+function printReport(){window.print();}
+
+// ═══════════════════════════════════════════════
+//  ACTIVITY LOG
+// ═══════════════════════════════════════════════
+function log(type,title,desc=''){
+  DB.activity.unshift({type,title,desc,time:now()});
+  if(DB.activity.length>100)DB.activity=DB.activity.slice(0,100);
+}
+function renderActivity(){
+  const el=document.getElementById('activity-log');
+  if(!el)return;
+  const emp=document.getElementById('activity-empty');
+  if(!DB.activity.length){emp.style.display='block';el.innerHTML='';return;}
+  emp.style.display='none';
+  const clrs={info:'var(--cyan)',warn:'var(--amber)',danger:'var(--red)',success:'var(--green)'};
+  el.innerHTML=DB.activity.map(a=>`
+    <div class="tl-item">
+      <div class="tl-dot-wrap">
+        <div class="tl-dot" style="background:${clrs[a.type]||'var(--cyan)'}"></div>
+        <div class="tl-line"></div>
+      </div>
+      <div class="tl-body">
+        <div class="tl-title">${a.title}</div>
+        ${a.desc?`<div class="tl-desc">${a.desc}</div>`:''}
+        <div class="tl-time">${a.time}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════
+//  SETTINGS
+// ═══════════════════════════════════════════════
+function renderSettings(){
+  const el=document.getElementById('cfg-name');
+  if(!el)return;
+  el.value=DB.settings.name||'FIBAR NET';
+  document.getElementById('cfg-owner').value=DB.settings.owner||'';
+  document.getElementById('cfg-phone').value=DB.settings.phone||'';
+  updateStorageInfo();
+}
+function saveSettings(){
+  DB.settings={name:v('cfg-name')||'FIBAR NET',owner:v('cfg-owner'),phone:v('cfg-phone')};
+  save();toast('تم حفظ الإعدادات');
+}
+function exportData(){
+  const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`fibarnet_backup_${today()}.json`;a.click();
+  toast('تم تصدير البيانات 📤');
+}
+function importData(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{try{DB=JSON.parse(ev.target.result);save();renderAll();toast('تم استيراد البيانات ✅');}
+    catch{toast('خطأ في الملف','error');}};
+  reader.readAsText(file);
+}
+function resetData(){
+  if(!confirm('هل تريد مسح كل البيانات؟ لا يمكن التراجع!'))return;
+  DB=JSON.parse(JSON.stringify(DEF));save();renderAll();toast('تمت إعادة ضبط البيانات','warn');
+}
+
+// ═══════════════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════════════
+const v=id=>(document.getElementById(id)?.value||'').trim();
+const g=id=>document.getElementById(id)?.value||'';
+function setSel(id,val){
+  const el=document.getElementById(id);if(!el)return;
+  [...el.options].forEach(o=>{if(o.value===val||o.text===val)el.value=o.value;});
+}
+function resetModal(id){
+  document.getElementById(id).querySelectorAll('input:not([type=hidden]),textarea').forEach(el=>{
+    if(el.type==='number'&&el.id.includes('qty'))el.value='1';
+    else if(el.type!=='submit')el.value='';
+  });
+  document.querySelectorAll('#'+id+' input[type=hidden]').forEach(el=>el.value='');
+}
+
+// ═══════════════════════════════════════════════
+//  CLOCK
+// ═══════════════════════════════════════════════
+function updateClock(){
+  const n=new Date();
+  const el=document.getElementById('clock');
+  if(el)el.textContent=`${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;
+}
+setInterval(updateClock,1000);updateClock();
+
+// ═══════════════════════════════════════════════
+//  MASTER RENDER
+// ═══════════════════════════════════════════════
+function renderAll(){
+  renderDashboard();
+  renderSites();
+  renderDevices();
+  renderFaults();
+  renderTasks();
+  renderMaintenance();
+  renderSubs();
+  renderFinance();
+  renderActivity();
+  renderSettings();
+  renderMap();
+}
+
+// ═══════════════════════════════════════════════
+//  PWA
+// ═══════════════════════════════════════════════
+let dPr;
+if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();dPr=e;
+  document.getElementById('install-bar').classList.add('show');
+});
+document.getElementById('install-btn').addEventListener('click',()=>{
+  if(dPr){dPr.prompt();dPr=null;}
+  document.getElementById('install-bar').classList.remove('show');
+});
+
+// INIT
+renderAll();
+updateStorageInfo();
+</script>
+</body>
+</html>
